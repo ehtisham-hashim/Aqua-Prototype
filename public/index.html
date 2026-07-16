@@ -453,7 +453,11 @@
 
         <!-- Tab 3: PET Production -->
         <section id="tab-production" class="tab-panel">
+          <div class="panel-card" id="production-nav-card" style="padding: 0; background: transparent; border: none; box-shadow: none; margin-bottom: 0;">
+            <!-- Sub-tab nav row injected here by injectSubtabs() -->
+          </div>
           <div class="content-split-2">
+
             <!-- Left: Materials lists -->
             <div class="panel-card">
               <h2>Factory Consumables Inventory</h2>
@@ -521,9 +525,12 @@
                   </tr>
                 </thead>
                 <tbody id="production-history-body">
-                  <!-- Injected dynamically -->
                 </tbody>
-              </table>        
+              </table>
+            </div>
+          </div>
+        </section>
+
         <!-- Tab 4: Purchases -->
         <section id="tab-purchases" class="tab-panel">
           <div class="panel-card">
@@ -647,6 +654,17 @@
 
           <div class="panel-card mt-20">
             <h2>Recent Operating Expenses Logs</h2>
+            <!-- Expense Category Subtabs Filter -->
+            <div class="page-subtabs-row" id="expenses-filter-tabs" style="margin-top: 10px; margin-bottom: 15px;">
+              <button class="subtab-btn active" data-expense-filter="all" onclick="filterExpensesList('all')">All Category Logs</button>
+              <button class="subtab-btn" data-expense-filter="fuel" onclick="filterExpensesList('fuel')">Fuel</button>
+              <button class="subtab-btn" data-expense-filter="salaries" onclick="filterExpensesList('salaries')">Salaries</button>
+              <button class="subtab-btn" data-expense-filter="electricity" onclick="filterExpensesList('electricity')">Electricity</button>
+              <button class="subtab-btn" data-expense-filter="plant_rent" onclick="filterExpensesList('plant_rent')">Rent</button>
+              <button class="subtab-btn" data-expense-filter="vehicle_repair" onclick="filterExpensesList('vehicle_repair')">Vehicle Repairs</button>
+              <button class="subtab-btn" data-expense-filter="machine_repair" onclick="filterExpensesList('machine_repair')">Machine Repairs</button>
+              <button class="subtab-btn" data-expense-filter="misc" onclick="filterExpensesList('misc')">Misc</button>
+            </div>
             <div class="table-frame">
               <table class="simple-table" id="expenses-table-log">
                 <thead>
@@ -736,13 +754,23 @@
               <h2>Post Daily Closing & Lock Ledger</h2>
               <p class="description-text">Once submitted, editing daily transactions is locked for that day. (Only Owner can override).</p>
               
+              <!-- Daily Closing Summary Card -->
+              <div class="closing-summary-box mt-15" style="margin-top:15px; margin-bottom:15px;">
+                <h4>Today's Summary for Selected Date:</h4>
+                <p>Deliveries Completed: <span class="bold" id="close-delivery-count">0</span></p>
+                <p>Sales Value: <span class="bold text-cyan" id="close-sales-value">Rs. 0</span></p>
+                <p>Cash Collected: <span class="bold text-success" id="close-cash-value">Rs. 0</span></p>
+                <p>Expenses Billed: <span class="bold text-danger" id="close-expense-value">Rs. 0</span></p>
+                <p style="margin-top: 8px; border-top: 1px solid #cbd5e1; padding-top: 8px;">Net Cash Delta: <span class="bold" id="close-net-value">Rs. 0</span></p>
+              </div>
+
               <!-- Owner Close Form -->
               <form id="daily-closing-form">
                 <div class="form-item">
                   <label for="closing-date">Date to Close</label>
                   <input type="date" id="closing-date" required class="form-input">
                 </div>
-                <button type="submit" class="btn btn-cyan btn-full">Submit & Lock Today's Ledger</button>
+                <button type="submit" class="btn btn-cyan btn-full" style="margin-top: 15px;">Submit & Lock Today's Ledger</button>
               </form>
               
               <!-- Admin Supervisor checklist form -->
@@ -1049,6 +1077,16 @@
               <div class="form-item">
                 <label>System Integrity Logs</label>
                 <button class="btn btn-muted" id="btn-view-logs">📋 View System Activity Logs</button>
+              </div>
+            </div>
+
+            <!-- Bulk Copy/Paste Data Section -->
+            <div class="form-item mt-20" style="margin-top: 20px;">
+              <label for="bulk-db-textarea">Bulk DB Import / Export (JSON Text)</label>
+              <textarea id="bulk-db-textarea" rows="8" class="form-input" style="font-family: monospace; font-size: 11px; margin-top: 5px; width: 100%; box-sizing: border-box;" placeholder='{"customers": [...], "items": [...], ...}'></textarea>
+              <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-cyan btn-xs" id="btn-export-bulk">Output Bulk Lines (Export)</button>
+                <button class="btn btn-danger btn-xs" id="btn-import-bulk">Intake Bulk Lines (Import)</button>
               </div>
             </div>
             <div class="table-frame hidden mt-15" id="settings-logs-container">
@@ -1624,8 +1662,6 @@
               <p class="description-text">Type above to query the ledger database.</p>
             </div>
           </div>
-            </div>
-          </div>
         </section>
 
         <!-- New Dashboard Subtabs -->
@@ -2046,6 +2082,7 @@
                     <th>Stock Count</th>
                     <th>Minimum Safety Level</th>
                     <th>Reorder Urgency</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="inventory-low-stock-tbody">
@@ -2249,7 +2286,14 @@
         </section>
 
         <section id="tab-purchases-bills" class="tab-panel">
-          <div class="panel-card">
+          <!-- Page sub-sub-tabs -->
+          <div class="page-subtabs-row" id="purchases-bills-subtabs" style="margin-top: 10px; margin-bottom: 15px;">
+            <button class="subtab-btn active" id="btn-subtab-bills" onclick="togglePurchasesBillsTab('bills')">Outstanding Payables (Bills)</button>
+            <button class="subtab-btn" id="btn-subtab-pending" onclick="togglePurchasesBillsTab('pending')">Pending Purchases / Low Stock Procurements</button>
+          </div>
+
+          <!-- Outstanding Bills Content Card -->
+          <div class="panel-card" id="card-purchases-bills">
             <h2>Purchase Invoices & Bills Payable</h2>
             <div class="table-frame mt-15">
               <table class="simple-table">
@@ -2268,20 +2312,19 @@
               </table>
             </div>
           </div>
-        </section>
 
-        <section id="tab-purchases-pending" class="tab-panel">
-          <div class="panel-card">
-            <h2>Pending Procurements</h2>
-            <p class="description-text">Expected items ordered but not yet cleared or paid.</p>
+          <!-- Pending Procurements Content Card -->
+          <div class="panel-card hidden" id="card-purchases-pending">
+            <h2>Pending Purchases / Low Stock Procurements</h2>
+            <p class="description-text">Raw materials below safety-level limits requiring procurement.</p>
             <div class="table-frame mt-15">
               <table class="simple-table">
                 <thead>
                   <tr>
-                    <th>Expected Date</th>
-                    <th>Vendor</th>
-                    <th>Description</th>
-                    <th>Est. Cost</th>
+                    <th>Material Name</th>
+                    <th>Current Balance</th>
+                    <th>Safety Limit</th>
+                    <th>Action</th>
                   </tr>
                 </thead>
                 <tbody id="purchases-pending-tbody">
@@ -2715,6 +2758,87 @@
           </div>
         </section>
 
+        <!-- Tab: Reports -->
+        <section id="tab-reports" class="tab-panel">
+          <div class="panel-card">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+              <div>
+                <h2>📈 Business Reports</h2>
+                <p class="description-text">KPI summaries, analytics charts, and detailed data exports.</p>
+              </div>
+              <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                <input type="date" id="rpt-from" class="form-input" style="width:140px;">
+                <input type="date" id="rpt-to" class="form-input" style="width:140px;">
+                <button class="btn btn-cyan" onclick="renderReports()">🔄 Apply Filter</button>
+                <button class="btn btn-primary" onclick="exportReportCSV()">📥 Export CSV</button>
+              </div>
+            </div>
+
+            <!-- Report Type Tabs -->
+            <div id="report-type-tabs" class="page-subtabs-row" style="margin-top: 16px; margin-bottom: 8px;">
+              <button class="subtab-btn active" data-report-type="sales" onclick="setReportType('sales')">Sales Revenue</button>
+              <button class="subtab-btn" data-report-type="profit" onclick="setReportType('profit')">Profit &amp; Loss</button>
+              <button class="subtab-btn" data-report-type="expense" onclick="setReportType('expense')">Operating Expenses</button>
+              <button class="subtab-btn" data-report-type="production" onclick="setReportType('production')">Production Yield</button>
+              <button class="subtab-btn" data-report-type="inventory" onclick="setReportType('inventory')">Inventory Status</button>
+              <button class="subtab-btn" data-report-type="bottle" onclick="setReportType('bottle')">Bottle Assets</button>
+              <button class="subtab-btn" data-report-type="credit" onclick="setReportType('credit')">Customer Credit</button>
+              <button class="subtab-btn" data-report-type="vendor" onclick="setReportType('vendor')">Vendor Payables</button>
+            </div>
+
+            <!-- Report Period Tabs -->
+            <div id="report-period-tabs" class="page-subtabs-row" style="margin-bottom: 0;">
+              <button class="subtab-btn" data-report-period="daily" onclick="setReportPeriod('daily')">Daily View</button>
+              <button class="subtab-btn" data-report-period="weekly" onclick="setReportPeriod('weekly')">Weekly View</button>
+              <button class="subtab-btn active" data-report-period="monthly" onclick="setReportPeriod('monthly')">Monthly View</button>
+              <button class="subtab-btn" data-report-period="yearly" onclick="setReportPeriod('yearly')">Yearly View</button>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="stats-row mt-20" id="rpt-kpi-cards">
+            <div class="stat-card">
+              <span class="label">Total Revenue</span>
+              <span class="value text-cyan" id="rpt-kpi-revenue">Rs. 0</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">Total Expenses</span>
+              <span class="value text-danger" id="rpt-kpi-expenses">Rs. 0</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">Net Profit</span>
+              <span class="value text-success" id="rpt-kpi-profit">Rs. 0</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">Profit Margin</span>
+              <span class="value text-warning" id="rpt-kpi-margin">0%</span>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div class="panel-card mt-20">
+            <h3 id="rpt-chart-title">Sales Overview (Last 7 Days)</h3>
+            <div id="rpt-chart" class="chart-container-flex" style="height:200px; margin-top:12px;"></div>
+          </div>
+
+          <!-- Data Table -->
+          <div class="panel-card mt-20">
+            <h3 id="rpt-table-title">Report Data</h3>
+            <div class="table-frame mt-10">
+              <table class="simple-table">
+                <thead>
+                  <tr id="rpt-thead-row">
+                    <th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody id="rpt-tbody">
+                  <tr><td colspan="5" style="text-align:center; padding:20px;">Select a report type above to load data.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
       </main>
     </div>
   </div>
@@ -2939,86 +3063,9 @@
         <button type="submit" class="btn btn-cyan btn-full">Post Delivery Entry</button>
       </form>
     </div>
-  </div>
-
-
-        <!-- Tab: Reports -->
-        <section id="tab-reports" class="tab-panel">
-          <div class="panel-card">
-            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-              <div>
-                <h2>📈 Business Reports</h2>
-                <p class="description-text">KPI summaries, analytics charts, and detailed data exports.</p>
-              </div>
-              <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                <input type="date" id="rpt-from" class="form-input" style="width:140px;">
-                <input type="date" id="rpt-to" class="form-input" style="width:140px;">
-                <button class="btn btn-cyan" onclick="renderReports(document.getElementById('rpt-filter-active').value)">🔄 Apply Filter</button>
-                <button class="btn btn-primary" onclick="exportReportCSV()">📥 Export CSV</button>
-              </div>
-            </div>
-
-            <!-- Filter Chips -->
-            <div id="rpt-filter-chips" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:16px;">
-              <input type="hidden" id="rpt-filter-active" value="sales">
-              <button class="btn btn-cyan rpt-chip active" data-filter="sales" onclick="setReportFilter('sales')">Sales</button>
-              <button class="btn btn-muted rpt-chip" data-filter="profit" onclick="setReportFilter('profit')">Profit</button>
-              <button class="btn btn-muted rpt-chip" data-filter="expense" onclick="setReportFilter('expense')">Expenses</button>
-              <button class="btn btn-muted rpt-chip" data-filter="inventory" onclick="setReportFilter('inventory')">Inventory</button>
-              <button class="btn btn-muted rpt-chip" data-filter="production" onclick="setReportFilter('production')">Production</button>
-              <button class="btn btn-muted rpt-chip" data-filter="bottle" onclick="setReportFilter('bottle')">Bottles</button>
-              <button class="btn btn-muted rpt-chip" data-filter="credit" onclick="setReportFilter('credit')">Customer Credit</button>
-              <button class="btn btn-muted rpt-chip" data-filter="vendor" onclick="setReportFilter('vendor')">Vendors</button>
-              <button class="btn btn-muted rpt-chip" data-filter="daily" onclick="setReportFilter('daily')">Daily</button>
-              <button class="btn btn-muted rpt-chip" data-filter="monthly" onclick="setReportFilter('monthly')">Monthly</button>
-            </div>
-          </div>
-
-          <!-- KPI Cards -->
-          <div class="stats-row mt-20" id="rpt-kpi-cards">
-            <div class="stat-card">
-              <span class="label">Total Revenue</span>
-              <span class="value text-cyan" id="rpt-kpi-revenue">Rs. 0</span>
-            </div>
-            <div class="stat-card">
-              <span class="label">Total Expenses</span>
-              <span class="value text-danger" id="rpt-kpi-expenses">Rs. 0</span>
-            </div>
-            <div class="stat-card">
-              <span class="label">Net Profit</span>
-              <span class="value text-success" id="rpt-kpi-profit">Rs. 0</span>
-            </div>
-            <div class="stat-card">
-              <span class="label">Profit Margin</span>
-              <span class="value text-warning" id="rpt-kpi-margin">0%</span>
-            </div>
-          </div>
-
-          <!-- Chart -->
-          <div class="panel-card mt-20">
-            <h3 id="rpt-chart-title">Sales Overview (Last 7 Days)</h3>
-            <div id="rpt-chart" class="chart-container-flex" style="height:200px; margin-top:12px;"></div>
-          </div>
-
-          <!-- Data Table -->
-          <div class="panel-card mt-20">
-            <h3 id="rpt-table-title">Report Data</h3>
-            <div class="table-frame mt-10">
-              <table class="simple-table">
-                <thead>
-                  <tr id="rpt-thead-row">
-                    <th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Notes</th>
-                  </tr>
-                </thead>
-                <tbody id="rpt-tbody">
-                  <tr><td colspan="5" style="text-align:center; padding:20px;">Select a report type above to load data.</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
 
   <script src="app.js"></script>
 </body>
 </html>
+
 

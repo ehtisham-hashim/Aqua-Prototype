@@ -108,17 +108,56 @@
   }
 
   function getTable(table) {
-    const key = getDbKey(table);
+    let t = table;
+    if (t === 'production_runs' || t === 'productions') {
+      t = 'production_batches';
+    }
+    const key = getDbKey(t);
     let data = localStorage.getItem(key);
     if (!data) {
       return [];
     }
-    return JSON.parse(data);
+    let arr = JSON.parse(data);
+    if (t === 'production_batches') {
+      return arr.map(b => ({
+        ...b,
+        qty05L: b.qty05LProduced !== undefined ? b.qty05LProduced : (b.qty05L || 0),
+        qty15L: b.qty15LProduced !== undefined ? b.qty15LProduced : (b.qty15L || 0),
+        qty05LProduced: b.qty05LProduced !== undefined ? b.qty05LProduced : (b.qty05L || 0),
+        qty15LProduced: b.qty15LProduced !== undefined ? b.qty15LProduced : (b.qty15L || 0),
+        sodiumUsed: b.sodiumConsumed !== undefined ? b.sodiumConsumed : (b.sodiumUsed || 0),
+        calciumUsed: b.calciumConsumed !== undefined ? b.calciumConsumed : (b.calciumUsed || 0),
+        magnesiumUsed: b.magnesiumConsumed !== undefined ? b.magnesiumConsumed : (b.magnesiumUsed || 0),
+        sodiumConsumed: b.sodiumConsumed !== undefined ? b.sodiumConsumed : (b.sodiumUsed || 0),
+        calciumConsumed: b.calciumConsumed !== undefined ? b.calciumConsumed : (b.calciumUsed || 0),
+        magnesiumConsumed: b.magnesiumConsumed !== undefined ? b.magnesiumConsumed : (b.magnesiumUsed || 0),
+        brokenEmpty: b.brokenEmpty !== undefined ? b.brokenEmpty : ((parseInt(b.broken05L || 0) + parseInt(b.broken15L || 0)) || 0),
+        date: b.productionDate || b.date
+      }));
+    }
+    return arr;
   }
 
   function saveTable(table, data) {
-    const key = getDbKey(table);
+    let t = table;
+    if (t === 'production_runs' || t === 'productions') {
+      t = 'production_batches';
+    }
+    const key = getDbKey(t);
     localStorage.setItem(key, JSON.stringify(data));
+  }
+
+  function logActivity(actionDesc) {
+    const logs = getTable('activity_logs') || [];
+    const nextLogId = logs.length > 0 ? Math.max(...logs.map(l => l.id)) + 1 : 1;
+    logs.push({
+      id: nextLogId,
+      timestamp: new Date().toLocaleString(),
+      role: state.role.toUpperCase(),
+      name: state.role === 'owner' ? 'Owner' : (state.role.toUpperCase() + ' User'),
+      action: actionDesc
+    });
+    saveTable('activity_logs', logs);
   }
 
   // Seeding Database
@@ -306,588 +345,215 @@
   }
 
   // --- ROLE AND COMPANY ACCESS FILTERS ---
-  // Sidebars and structures configurations per role
   const PORTAL_SIDEBAR_CONFIG = {
     owner: [
-      {
-        label: 'Dashboard',
-        icon: '📊',
-        subs: [
-          { label: 'Overview', tab: 'tab-dashboard' },
-          { label: 'Sales Analytics', tab: 'tab-dashboard-sales' },
-          { label: 'Financial Overview', tab: 'tab-dashboard-financial' },
-          { label: 'Inventory Summary', tab: 'tab-inventory' },
-          { label: 'Production Summary', tab: 'tab-production-history' },
-          { label: 'Low Stock Alerts', tab: 'tab-dashboard-low-stock' }
-        ]
-      },
-      {
-        label: 'Orders',
-        icon: '🚚',
-        subs: [
-          { label: 'New Order', tab: 'tab-new-order' },
-          { label: 'Pending Orders', tab: 'tab-orders', filter: 'pending' },
-          { label: 'In Progress', tab: 'tab-orders-inprogress' },
-          { label: 'Completed Orders', tab: 'tab-orders-completed' },
-          { label: 'Cancelled Orders', tab: 'tab-orders-cancelled' },
-          { label: 'Delivery Tracking', tab: 'tab-deliveries' }
-        ]
-      },
-      {
-        label: 'Customers',
-        icon: '👤',
-        subs: [
-          { label: 'Customer List', tab: 'tab-crm' },
-          { label: 'Add Customer', tab: 'tab-customer-add' },
-          { label: 'Customer Credits', tab: 'tab-customer-credits' },
-          { label: 'Bottle Balance', tab: 'tab-customer-bottles' },
-          { label: 'Customer History', tab: 'tab-customer-history' },
-          { label: 'Customer Locations', tab: 'tab-customer-locations' },
-          { label: 'Customer Reminders', tab: 'tab-customer-reminders' }
-        ]
-      },
-      {
-        label: 'Production',
-        icon: '🏭',
-        subs: [
-          { label: 'New Production', tab: 'tab-production' },
-          { label: 'Production History', tab: 'tab-production-history' },
-          { label: 'Production Reports', tab: 'tab-production-reports' },
-          { label: 'Broken Bottles', tab: 'tab-broken-bottles' },
-          { label: 'Water Consumption', tab: 'tab-production-water' },
-          { label: 'Mineral Consumption', tab: 'tab-production-mineral' }
-        ]
-      },
-      {
-        label: 'Inventory',
-        icon: '📦',
-        subs: [
-          { label: 'Raw Materials', tab: 'tab-raw-materials' },
-          { label: 'Finished Goods', tab: 'tab-finished-goods' },
-          { label: 'Stock Transactions', tab: 'tab-inventory-txns' },
-          { label: 'Low Stock Alerts', tab: 'tab-inventory-low-stock' },
-          { label: 'Inventory Adjustments', tab: 'tab-inventory-adjust' }
-        ]
-      },
-      {
-        label: 'Bottle Ledger',
-        icon: '🌀',
-        subs: [
-          { label: 'Company Bottles', tab: 'tab-bottle-company' },
-          { label: 'Customer Bottles', tab: 'tab-bottle-customer' },
-          { label: 'Broken Bottles', tab: 'tab-bottle-broken' },
-          { label: 'Lost Bottles', tab: 'tab-bottle-lost' },
-          { label: 'Bottle Purchases', tab: 'tab-bottle-purchased' },
-          { label: 'Bottle Transactions', tab: 'tab-bottle-txns' }
-        ]
-      },
-      {
-        label: 'Purchases',
-        icon: '🛒',
-        subs: [
-          { label: 'New Purchase', tab: 'tab-purchases' },
-          { label: 'Purchase History', tab: 'tab-purchases-history' },
-          { label: 'Purchase Bills', tab: 'tab-purchases-bills' },
-          { label: 'Pending Purchases', tab: 'tab-purchases-pending' }
-        ]
-      },
-      {
-        label: 'Vendors',
-        icon: '🤝',
-        subs: [
-          { label: 'Vendor List', tab: 'tab-vendors' },
-          { label: 'Add Vendor', tab: 'tab-vendor-add' },
-          { label: 'Vendor Payments', tab: 'tab-vendor-payments' },
-          { label: 'Vendor Balances', tab: 'tab-vendor-balances' },
-          { label: 'Purchase History', tab: 'tab-vendor-purchase-history' }
-        ]
-      },
-      {
-        label: 'Expenses',
-        icon: '💵',
-        subs: [
-          { label: 'Fuel', tab: 'tab-expenses', filter: 'fuel' },
-          { label: 'Salaries', tab: 'tab-expenses', filter: 'salaries' },
-          { label: 'Electricity', tab: 'tab-expenses', filter: 'electricity' },
-          { label: 'Plant Rent', tab: 'tab-expenses', filter: 'plant_rent' },
-          { label: 'Vehicle Repairs', tab: 'tab-expenses', filter: 'vehicle_repair' },
-          { label: 'Machine Repairs', tab: 'tab-expenses', filter: 'machine_repair' },
-          { label: 'Miscellaneous', tab: 'tab-expenses', filter: 'misc' },
-          { label: 'Expense History', tab: 'tab-expenses', filter: 'all' }
-        ]
-      },
-      {
-        label: 'Counter Sales',
-        icon: '🏪',
-        subs: [
-          { label: 'New Counter Sale', tab: 'tab-counter-sales' },
-          { label: 'Counter Sale History', tab: 'tab-counter-sales-history' },
-          { label: 'Counter Sale Reports', tab: 'tab-counter-sales-reports' }
-        ]
-      },
-      {
-        label: 'Reports',
-        icon: '📈',
-        subs: [
-          { label: 'Sales Report', tab: 'tab-reports', filter: 'sales' },
-          { label: 'Profit Report', tab: 'tab-reports', filter: 'profit' },
-          { label: 'Expense Report', tab: 'tab-reports', filter: 'expense' },
-          { label: 'Inventory Report', tab: 'tab-reports', filter: 'inventory' },
-          { label: 'Production Report', tab: 'tab-reports', filter: 'production' },
-          { label: 'Bottle Report', tab: 'tab-reports', filter: 'bottle' },
-          { label: 'Customer Credit Report', tab: 'tab-reports', filter: 'credit' },
-          { label: 'Vendor Report', tab: 'tab-reports', filter: 'vendor' },
-          { label: 'Daily Report', tab: 'tab-reports', filter: 'daily' },
-          { label: 'Weekly Report', tab: 'tab-reports', filter: 'weekly' },
-          { label: 'Monthly Report', tab: 'tab-reports', filter: 'monthly' },
-          { label: 'Yearly Report', tab: 'tab-reports', filter: 'yearly' }
-        ]
-      },
-      {
-        label: 'Website',
-        icon: '🌐',
-        subs: [
-          { label: 'Homepage', tab: 'tab-website-homepage' },
-          { label: 'Customers', tab: 'tab-website-customers' },
-          { label: 'Reviews', tab: 'tab-website-reviews' },
-          { label: 'Careers', tab: 'tab-website-careers' },
-          { label: 'Contact', tab: 'tab-website-contact' },
-          { label: 'Website Settings', tab: 'tab-website' }
-        ]
-      },
-      {
-        label: 'Users & Roles',
-        icon: '👥',
-        subs: [
-          { label: 'Users', tab: 'tab-users-roles', filter: 'users' },
-          { label: 'Roles', tab: 'tab-users-roles', filter: 'roles' },
-          { label: 'Permissions', tab: 'tab-users-roles', filter: 'permissions' },
-          { label: 'Password Management', tab: 'tab-settings', filter: 'passwords' },
-          { label: 'Activity Logs', tab: 'tab-settings', filter: 'logs' }
-        ]
-      },
-      {
-        label: 'Settings',
-        icon: '⚙️',
-        subs: [
-          { label: 'Company Profile', tab: 'tab-settings-profile' },
-          { label: 'Product Settings', tab: 'tab-settings-products' },
-          { label: 'Inventory Settings', tab: 'tab-settings-inventory' },
-          { label: 'Notification Settings', tab: 'tab-settings-notifications' },
-          { label: 'Backup & Restore', tab: 'tab-settings', filter: 'backup' },
-          { label: 'System Settings', tab: 'tab-settings-system' }
-        ]
-      },
-      {
-        label: 'Daily Closing',
-        icon: '🔒',
-        subs: [
-          { label: 'Closing Checklist', tab: 'tab-closing', filter: 'checklist' },
-          { label: 'Cash Verification', tab: 'tab-closing', filter: 'cash' },
-          { label: 'Stock Verification', tab: 'tab-closing', filter: 'stock' },
-          { label: 'Production Verification', tab: 'tab-closing', filter: 'production' },
-          { label: 'Orders Verification', tab: 'tab-closing', filter: 'orders' },
-          { label: 'Close Day', tab: 'tab-closing', filter: 'close' }
-        ]
-      }
+      { label: 'Dashboard', icon: '📊', tab: 'tab-dashboard' },
+      { label: 'Orders', icon: '🚚', tab: 'tab-orders' },
+      { label: 'Customers', icon: '👤', tab: 'tab-crm' },
+      { label: 'Production', icon: '🏭', tab: 'tab-production' },
+      { label: 'Inventory', icon: '📦', tab: 'tab-inventory' },
+      { label: 'Bottle Ledger', icon: '🌀', tab: 'tab-bottle-company' },
+      { label: 'Purchases', icon: '🛒', tab: 'tab-purchases' },
+      { label: 'Vendors', icon: '🤝', tab: 'tab-vendors' },
+      { label: 'Expenses', icon: '💵', tab: 'tab-expenses', filter: 'all' },
+      { label: 'Counter Sales', icon: '🏪', tab: 'tab-counter-sales' },
+      { label: 'Reports', icon: '📈', tab: 'tab-reports', filter: 'sales' },
+      { label: 'Website Settings', icon: '🌐', tab: 'tab-website' },
+      { label: 'Users & Roles', icon: '👥', tab: 'tab-users-roles', filter: 'users' },
+      { label: 'Settings', icon: '⚙️', tab: 'tab-settings' }
     ],
     admin: [
-      {
-        label: 'Dashboard',
-        icon: '📊',
-        subs: [
-          { label: 'Overview', tab: 'tab-dashboard' },
-          { label: "Today's Orders", tab: 'tab-orders', filter: 'pending', viewOnly: true },
-          { label: "Today's Production", tab: 'tab-production-history', viewOnly: true },
-          { label: 'Inventory Status', tab: 'tab-inventory', viewOnly: true },
-          { label: 'Cash Summary', tab: 'tab-cash-summary', viewOnly: true }
-        ]
-      },
-      {
-        label: 'Orders',
-        icon: '🚚',
-        subs: [
-          { label: 'Pending Orders', tab: 'tab-orders', filter: 'pending', viewOnly: true },
-          { label: 'Completed Orders', tab: 'tab-orders-completed', viewOnly: true },
-          { label: 'Delivery Status', tab: 'tab-deliveries', viewOnly: true },
-          { label: 'View Order Details', tab: 'tab-orders-completed', viewOnly: true }
-        ]
-      },
-      {
-        label: 'Production',
-        icon: '🏭',
-        subs: [
-          { label: "Today's Production", tab: 'tab-production-history', viewOnly: true },
-          { label: 'Production History', tab: 'tab-production-history', viewOnly: true },
-          { label: 'Broken Bottles', tab: 'tab-broken-bottles', viewOnly: true }
-        ]
-      },
-      {
-        label: 'Inventory',
-        icon: '📦',
-        subs: [
-          { label: 'Raw Materials', tab: 'tab-raw-materials', viewOnly: true },
-          { label: 'Finished Goods', tab: 'tab-finished-goods', viewOnly: true },
-          { label: 'Bottle Summary', tab: 'tab-bottle-company', viewOnly: true },
-          { label: 'Low Stock', tab: 'tab-inventory-low-stock', viewOnly: true }
-        ]
-      },
-      {
-        label: 'Cash Summary',
-        icon: '💰',
-        subs: [
-          { label: "Today's Collection", tab: 'tab-cash-summary', viewOnly: true },
-          { label: 'Credit Sales', tab: 'tab-customer-credits', viewOnly: true },
-          { label: 'Expenses Summary', tab: 'tab-expenses', filter: 'all', viewOnly: true }
-        ]
-      },
-      {
-        label: 'Daily Closing',
-        icon: '🔒',
-        subs: [
-          { label: 'Verify Stock', tab: 'tab-closing', filter: 'stock' },
-          { label: 'Verify Production', tab: 'tab-closing', filter: 'production' },
-          { label: 'Verify Orders', tab: 'tab-closing', filter: 'orders' },
-          { label: 'Verify Cash', tab: 'tab-closing', filter: 'cash' },
-          { label: 'Close Day', tab: 'tab-closing', filter: 'close' }
-        ]
-      }
+      { label: 'Dashboard', icon: '📊', tab: 'tab-dashboard' },
+      { label: 'Orders', icon: '🚚', tab: 'tab-orders' },
+      { label: 'Production', icon: '🏭', tab: 'tab-production' },
+      { label: 'Inventory', icon: '📦', tab: 'tab-inventory' },
+      { label: 'Cash Summary', icon: '💰', tab: 'tab-cash-summary' },
+      { label: 'Daily Closing', icon: '🔒', tab: 'tab-closing' }
     ],
     pm: [
-      {
-        label: 'Dashboard',
-        icon: '📊',
-        subs: [
-          { label: "Today's Production", tab: 'tab-production-history', viewOnly: true },
-          { label: 'Material Consumption', tab: 'tab-production-mineral', viewOnly: true },
-          { label: 'Broken Bottles', tab: 'tab-broken-bottles', viewOnly: true },
-          { label: 'Low Stock', tab: 'tab-inventory-low-stock', viewOnly: true }
-        ]
-      },
-      {
-        label: 'Production',
-        icon: '🏭',
-        subs: [
-          { label: 'New Production', tab: 'tab-production' },
-          { label: 'Production Queue', tab: 'tab-production-history' },
-          { label: 'Production Calculator', tab: 'tab-production' },
-          { label: 'Save Production', tab: 'tab-production' }
-        ]
-      },
-      {
-        label: 'Production History',
-        icon: '📅',
-        subs: [
-          { label: 'Today', tab: 'tab-production-history', filter: 'today' },
-          { label: 'Weekly', tab: 'tab-production-history', filter: 'weekly' },
-          { label: 'Monthly', tab: 'tab-production-history', filter: 'monthly' }
-        ]
-      },
-      {
-        label: 'Raw Materials',
-        icon: '📦',
-        subs: [
-          { label: 'Empty Bottles', tab: 'tab-raw-materials', filter: 'bottles' },
-          { label: 'Small Caps', tab: 'tab-raw-materials', filter: 'caps' },
-          { label: 'Labels', tab: 'tab-raw-materials', filter: 'labels' },
-          { label: 'Shrink Wrap', tab: 'tab-raw-materials', filter: 'shrink_wrap' },
-          { label: 'Minerals', tab: 'tab-raw-materials', filter: 'minerals' }
-        ]
-      },
-      {
-        label: 'Finished Goods',
-        icon: '✨',
-        subs: [
-          { label: '0.5L PET', tab: 'tab-finished-goods', filter: '0.5L' },
-          { label: '1.5L PET', tab: 'tab-finished-goods', filter: '1.5L' },
-          { label: 'Stock Summary', tab: 'tab-inventory' }
-        ]
-      },
-      {
-        label: 'Broken Bottles',
-        icon: '💔',
-        subs: [
-          { label: 'Record Breakage', tab: 'tab-broken-bottles' },
-          { label: 'Breakage History', tab: 'tab-broken-bottles' }
-        ]
-      },
-      {
-        label: 'Inventory View',
-        icon: '🔍',
-        subs: [
-          { label: 'Current Stock', tab: 'tab-inventory' },
-          { label: 'Stock Transactions', tab: 'tab-inventory-txns' },
-          { label: 'Low Stock Alerts', tab: 'tab-inventory-low-stock' }
-        ]
-      },
-      {
-        label: 'Daily Closing',
-        icon: '🔒',
-        subs: [
-          { label: 'Verify Production', tab: 'tab-closing', filter: 'production' },
-          { label: 'Verify Material Usage', tab: 'tab-closing', filter: 'materials' },
-          { label: 'Close Production', tab: 'tab-closing', filter: 'close' }
-        ]
-      }
+      { label: 'Dashboard', icon: '📊', tab: 'tab-production-history' },
+      { label: 'Production', icon: '🏭', tab: 'tab-production' },
+      { label: 'Production History', icon: '📅', tab: 'tab-production-history' },
+      { label: 'Raw Materials', icon: '📦', tab: 'tab-raw-materials' },
+      { label: 'Finished Goods', icon: '✨', tab: 'tab-finished-goods' },
+      { label: 'Broken Bottles', icon: '💔', tab: 'tab-broken-bottles' },
+      { label: 'Inventory View', icon: '🔍', tab: 'tab-inventory' },
+      { label: 'Daily Closing', icon: '🔒', tab: 'tab-closing', filter: 'production' }
     ],
     mm: [
-      {
-        label: 'Dashboard',
-        icon: '📊',
-        subs: [
-          { label: "Today's Orders", tab: 'tab-orders', filter: 'pending' },
-          { label: 'Pending Deliveries', tab: 'tab-deliveries' },
-          { label: 'Collections', tab: 'tab-payments' },
-          { label: 'Customer Alerts', tab: 'tab-customer-reminders' }
-        ]
-      },
-      {
-        label: 'New Order',
-        icon: '➕',
-        subs: [
-          { label: '19L Order', tab: 'tab-new-order', filter: '19L' },
-          { label: 'PET Order', tab: 'tab-new-order', filter: 'PET' },
-          { label: 'New Customer Order', tab: 'tab-new-order' }
-        ]
-      },
-      {
-        label: 'Pending Orders',
-        icon: '⏳',
-        subs: [
-          { label: 'Pending', tab: 'tab-orders', filter: 'pending' },
-          { label: 'Partial Delivery', tab: 'tab-orders', filter: 'partial' },
-          { label: 'Rescheduled', tab: 'tab-orders', filter: 'rescheduled' }
-        ]
-      },
-      {
-        label: 'Deliveries',
-        icon: '🚚',
-        subs: [
-          { label: 'Complete Delivery', tab: 'tab-deliveries' },
-          { label: 'Delivery History', tab: 'tab-deliveries' },
-          { label: 'Bottle Returns', tab: 'tab-customer-bottles' }
-        ]
-      },
-      {
-        label: 'Customers',
-        icon: '👤',
-        subs: [
-          { label: 'Customer List', tab: 'tab-crm' },
-          { label: 'Add Customer', tab: 'tab-customer-add' },
-          { label: 'Edit Customer', tab: 'tab-crm' },
-          { label: 'Customer History', tab: 'tab-customer-history' },
-          { label: 'Credit Details', tab: 'tab-customer-credits' },
-          { label: 'Bottle Balance', tab: 'tab-customer-bottles' },
-          { label: 'Customer Location', tab: 'tab-customer-locations' }
-        ]
-      },
-      {
-        label: 'Payments',
-        icon: '💵',
-        subs: [
-          { label: 'Receive Payment', tab: 'tab-payments' },
-          { label: 'Payment History', tab: 'tab-payments' },
-          { label: 'Outstanding Payments', tab: 'tab-customer-reminders' }
-        ]
-      },
-      {
-        label: 'Invoices',
-        icon: '📄',
-        subs: [
-          { label: 'Generate Invoice', tab: 'tab-invoices' },
-          { label: 'Print Invoice', tab: 'tab-invoices' },
-          { label: 'Invoice History', tab: 'tab-invoices' }
-        ]
-      },
-      {
-        label: 'Search',
-        icon: '🔍',
-        subs: [
-          { label: 'Search Customer', tab: 'tab-search', filter: 'customer' },
-          { label: 'Search Order', tab: 'tab-search', filter: 'order' },
-          { label: 'Search Phone Number', tab: 'tab-search', filter: 'phone' }
-        ]
-      },
-      {
-        label: 'Daily Closing',
-        icon: '🔒',
-        subs: [
-          { label: 'Verify Orders', tab: 'tab-closing', filter: 'orders' },
-          { label: 'Verify Deliveries', tab: 'tab-closing', filter: 'deliveries' },
-          { label: 'Verify Payments', tab: 'tab-closing', filter: 'payments' },
-          { label: 'Close Orders', tab: 'tab-closing', filter: 'close' }
-        ]
-      }
+      { label: 'Dashboard', icon: '📊', tab: 'tab-orders', filter: 'pending' },
+      { label: 'New Order', icon: '➕', tab: 'tab-new-order' },
+      { label: 'Pending Orders', icon: '⏳', tab: 'tab-orders', filter: 'pending' },
+      { label: 'Deliveries', icon: '🚚', tab: 'tab-deliveries' },
+      { label: 'Customers', icon: '👤', tab: 'tab-crm' },
+      { label: 'Payments', icon: '💵', tab: 'tab-payments' },
+      { label: 'Invoices', icon: '📄', tab: 'tab-invoices' },
+      { label: 'Search', icon: '🔍', tab: 'tab-search' },
+      { label: 'Daily Closing', icon: '🔒', tab: 'tab-closing', filter: 'orders' }
     ],
     accountant: [
-      {
-        label: 'Dashboard',
-        icon: '📊',
-        subs: [
-          { label: 'Cash Summary', tab: 'tab-cash-summary' },
-          { label: 'Expense Summary', tab: 'tab-expenses', filter: 'all' },
-          { label: 'Vendor Summary', tab: 'tab-vendor-balances' },
-          { label: 'Customer Credits', tab: 'tab-customer-credits' }
-        ]
-      },
-      {
-        label: 'Purchases',
-        icon: '🛒',
-        subs: [
-          { label: 'New Purchase', tab: 'tab-purchases' },
-          { label: 'Purchase History', tab: 'tab-purchases-history' },
-          { label: 'Bills', tab: 'tab-purchases-bills' },
-          { label: 'Attach Receipt', tab: 'tab-purchases' }
-        ]
-      },
-      {
-        label: 'Vendors',
-        icon: '🤝',
-        subs: [
-          { label: 'Vendor List', tab: 'tab-vendors' },
-          { label: 'Vendor Payments', tab: 'tab-vendor-payments' },
-          { label: 'Outstanding Vendors', tab: 'tab-vendor-balances' },
-          { label: 'Vendor Ledger', tab: 'tab-vendor-purchase-history' }
-        ]
-      },
-      {
-        label: 'Expenses',
-        icon: '💵',
-        subs: [
-          { label: 'Add Expense', tab: 'tab-expenses' },
-          { label: 'Expense Categories', tab: 'tab-expenses' },
-          { label: 'Expense History', tab: 'tab-expenses', filter: 'all' },
-          { label: 'Upload Receipt', tab: 'tab-expenses' }
-        ]
-      },
-      {
-        label: 'Counter Sales',
-        icon: '🏪',
-        subs: [
-          { label: 'New Counter Sale', tab: 'tab-counter-sales' },
-          { label: 'Counter Sale History', tab: 'tab-counter-sales-history' },
-          { label: 'Credit Sales', tab: 'tab-counter-sales-history', filter: 'credit' }
-        ]
-      },
-      {
-        label: 'Payments',
-        icon: '💳',
-        subs: [
-          { label: 'Customer Payments', tab: 'tab-payments' },
-          { label: 'Vendor Payments', tab: 'tab-vendor-payments' },
-          { label: 'Payment History', tab: 'tab-payments' }
-        ]
-      },
-      {
-        label: 'Invoices',
-        icon: '📄',
-        subs: [
-          { label: 'Generate Invoice', tab: 'tab-invoices' },
-          { label: 'Invoice History', tab: 'tab-invoices' },
-          { label: 'Print Invoice', tab: 'tab-invoices' }
-        ]
-      },
-      {
-        label: 'Reports',
-        icon: '📈',
-        subs: [
-          { label: 'Purchase Report', tab: 'tab-reports', filter: 'purchase' },
-          { label: 'Expense Report', tab: 'tab-reports', filter: 'expense' },
-          { label: 'Cash Report', tab: 'tab-reports', filter: 'cash' },
-          { label: 'Vendor Report', tab: 'tab-reports', filter: 'vendor' },
-          { label: 'Customer Credit Report', tab: 'tab-reports', filter: 'credit' },
-          { label: 'Counter Sale Report', tab: 'tab-reports', filter: 'counter' }
-        ]
-      },
-      {
-        label: 'Daily Closing',
-        icon: '🔒',
-        subs: [
-          { label: 'Verify Purchases', tab: 'tab-closing', filter: 'purchases' },
-          { label: 'Verify Expenses', tab: 'tab-closing', filter: 'expenses' },
-          { label: 'Verify Cash', tab: 'tab-closing', filter: 'cash' },
-          { label: 'Close Accounts', tab: 'tab-closing', filter: 'close' }
-        ]
-      }
+      { label: 'Dashboard', icon: '📊', tab: 'tab-cash-summary' },
+      { label: 'Purchases', icon: '🛒', tab: 'tab-purchases' },
+      { label: 'Vendors', icon: '🤝', tab: 'tab-vendors' },
+      { label: 'Production', icon: '🏭', tab: 'tab-blowing' },
+      { label: 'Expenses', icon: '💵', tab: 'tab-expenses', filter: 'all' },
+      { label: 'Counter Sales', icon: '🏪', tab: 'tab-counter-sales' },
+      { label: 'Reports', icon: '📈', tab: 'tab-reports', filter: 'sales' },
+      { label: 'Daily Closing', icon: '🔒', tab: 'tab-closing', filter: 'purchases' }
+    ]
+  };
+
+  const SUB_TABS_CONFIG = {
+    'tab-dashboard': [
+      { label: 'Overview', tab: 'tab-dashboard' },
+      { label: 'Sales Analytics', tab: 'tab-dashboard-sales' },
+      { label: 'Financial Overview', tab: 'tab-dashboard-financial' },
+      { label: 'Inventory Summary', tab: 'tab-inventory' },
+      { label: 'Production Summary', tab: 'tab-production-history' },
+      { label: 'Low Stock Alerts', tab: 'tab-dashboard-low-stock' }
+    ],
+    'tab-orders': [
+      { label: 'New Order', tab: 'tab-new-order' },
+      { label: 'Pending Orders', tab: 'tab-orders', filter: 'pending' },
+      { label: 'In Progress', tab: 'tab-orders-inprogress' },
+      { label: 'Completed Orders', tab: 'tab-orders-completed' },
+      { label: 'Cancelled Orders', tab: 'tab-orders-cancelled' },
+      { label: 'Delivery Tracking', tab: 'tab-deliveries' }
+    ],
+    'tab-crm': [
+      { label: 'Customer List', tab: 'tab-crm' },
+      { label: 'Add Customer', tab: 'tab-customer-add' },
+      { label: 'Customer Credits', tab: 'tab-customer-credits' },
+      { label: 'Bottle Balance', tab: 'tab-customer-bottles' },
+      { label: 'Customer History', tab: 'tab-customer-history' },
+      { label: 'Customer Locations', tab: 'tab-customer-locations' },
+      { label: 'Customer Reminders', tab: 'tab-customer-reminders' }
+    ],
+    'tab-production': [
+      { label: 'New Production', tab: 'tab-production' },
+      { label: 'Production History', tab: 'tab-production-history' },
+      { label: 'Production Reports', tab: 'tab-production-reports' },
+      { label: 'Broken Bottles', tab: 'tab-broken-bottles' },
+      { label: 'Water Consumption', tab: 'tab-production-water' },
+      { label: 'Mineral Consumption', tab: 'tab-production-mineral' }
+    ],
+    'tab-inventory': [
+      { label: 'Raw Materials', tab: 'tab-raw-materials' },
+      { label: 'Finished Goods', tab: 'tab-finished-goods' },
+      { label: 'Stock Transactions', tab: 'tab-inventory-txns' },
+      { label: 'Low Stock Alerts', tab: 'tab-inventory-low-stock' },
+      { label: 'Inventory Adjustments', tab: 'tab-inventory-adjust' }
+    ],
+    'tab-bottle-company': [
+      { label: 'Company Bottles', tab: 'tab-bottle-company' },
+      { label: 'Customer Bottles', tab: 'tab-bottle-customer' },
+      { label: 'Broken Bottles', tab: 'tab-bottle-broken' },
+      { label: 'Lost Bottles', tab: 'tab-bottle-lost' },
+      { label: 'Bottle Purchases', tab: 'tab-bottle-purchased' },
+      { label: 'Bottle Transactions', tab: 'tab-bottle-txns' }
+    ],
+    'tab-purchases': [
+      { label: 'New Purchase', tab: 'tab-purchases' },
+      { label: 'Purchase History', tab: 'tab-purchases-history' },
+      { label: 'Purchase Bills', tab: 'tab-purchases-bills' },
+      { label: 'Pending Purchases', tab: 'tab-purchases-pending' }
+    ],
+    'tab-vendors': [
+      { label: 'Vendor List', tab: 'tab-vendors' },
+      { label: 'Add Vendor', tab: 'tab-vendor-add' },
+      { label: 'Vendor Payments', tab: 'tab-vendor-payments' },
+      { label: 'Vendor Balances', tab: 'tab-vendor-balances' },
+      { label: 'Purchase History', tab: 'tab-vendor-purchase-history' }
+    ],
+    'tab-expenses': [
+      { label: 'Fuel', tab: 'tab-expenses', filter: 'fuel' },
+      { label: 'Salaries', tab: 'tab-expenses', filter: 'salaries' },
+      { label: 'Electricity', tab: 'tab-expenses', filter: 'electricity' },
+      { label: 'Plant Rent', tab: 'tab-expenses', filter: 'plant_rent' },
+      { label: 'Vehicle Repairs', tab: 'tab-expenses', filter: 'vehicle_repair' },
+      { label: 'Machine Repairs', tab: 'tab-expenses', filter: 'machine_repair' },
+      { label: 'Miscellaneous', tab: 'tab-expenses', filter: 'misc' },
+      { label: 'Expense History', tab: 'tab-expenses', filter: 'all' }
+    ],
+    'tab-counter-sales': [
+      { label: 'New Counter Sale', tab: 'tab-counter-sales' },
+      { label: 'Counter Sale History', tab: 'tab-counter-sales-history' },
+      { label: 'Counter Sale Reports', tab: 'tab-counter-sales-reports' }
+    ],
+    'tab-website': [
+      { label: 'Website Settings', tab: 'tab-website' },
+      { label: 'Homepage', tab: 'tab-website-homepage' },
+      { label: 'Customers', tab: 'tab-website-customers' },
+      { label: 'Reviews', tab: 'tab-website-reviews' },
+      { label: 'Careers', tab: 'tab-website-careers' },
+      { label: 'Contact', tab: 'tab-website-contact' }
+    ],
+    'tab-users-roles': [
+      { label: 'Users', tab: 'tab-users-roles', filter: 'users' },
+      { label: 'Roles', tab: 'tab-users-roles', filter: 'roles' },
+      { label: 'Permissions', tab: 'tab-users-roles', filter: 'permissions' },
+      { label: 'Password Management', tab: 'tab-settings', filter: 'passwords' },
+      { label: 'Activity Logs', tab: 'tab-settings', filter: 'logs' }
+    ],
+    'tab-settings': [
+      { label: 'Company Profile', tab: 'tab-settings-profile' },
+      { label: 'Product Settings', tab: 'tab-settings-products' },
+      { label: 'Inventory Settings', tab: 'tab-settings-inventory' },
+      { label: 'Notification Settings', tab: 'tab-settings-notifications' },
+      { label: 'Backup & Restore', tab: 'tab-settings', filter: 'backup' },
+      { label: 'System Settings', tab: 'tab-settings-system' }
     ]
   };
 
   function applyRoleSecurity() {
     const role = state.role;
-    const groups = PORTAL_SIDEBAR_CONFIG[role] || PORTAL_SIDEBAR_CONFIG['owner'];
+    const items = PORTAL_SIDEBAR_CONFIG[role] || PORTAL_SIDEBAR_CONFIG['owner'];
     const navContainer = document.getElementById('main-nav-tabs');
     if (!navContainer) return;
     
     // Build navigation items
     navContainer.innerHTML = '';
     
-    groups.forEach((group, index) => {
-      const groupEl = document.createElement('div');
-      groupEl.className = 'nav-accordion-group';
-      if (index === 0) groupEl.classList.add('expanded');
-      
-      const header = document.createElement('button');
-      header.className = 'nav-accordion-header';
-      header.innerHTML = `
-        <span class="nav-icon">${group.icon}</span>
-        <span class="nav-label">${group.label}</span>
-        <span class="nav-arrow">▼</span>
+    items.forEach((item, index) => {
+      const btn = document.createElement('button');
+      btn.className = 'nav-item';
+      if (index === 0) btn.classList.add('active');
+      btn.innerHTML = `
+        <span class="nav-icon">${item.icon}</span>
+        <span class="nav-label">${item.label}</span>
       `;
+      btn.dataset.tab = item.tab;
+      btn.dataset.filter = item.filter || '';
       
-      const subsContainer = document.createElement('div');
-      subsContainer.className = 'nav-accordion-subs';
-      
-      group.subs.forEach(sub => {
-        const subBtn = document.createElement('button');
-        subBtn.className = 'nav-sub-item';
-        subBtn.innerHTML = `<span>${sub.label}</span>`;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
         
-        subBtn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          document.querySelectorAll('.nav-sub-item').forEach(b => b.classList.remove('active'));
-          subBtn.classList.add('active');
+        // Switch tab panels
+        document.querySelectorAll('.content-panel .tab-panel').forEach(p => p.classList.remove('active'));
+        const panel = document.getElementById(item.tab);
+        if (panel) {
+          panel.classList.add('active');
           
-          document.querySelectorAll('.nav-accordion-header').forEach(h => h.classList.remove('active'));
-          header.classList.add('active');
-          
-          // Switch tab panels
-          document.querySelectorAll('.content-panel .tab-panel').forEach(p => p.classList.remove('active'));
-          const panel = document.getElementById(sub.tab);
-          if (panel) {
-            panel.classList.add('active');
-            
-            // Disable/Enable form elements based on view-only settings
-            const isView = sub.viewOnly || (role === 'admin' && sub.tab !== 'tab-closing');
-            panel.querySelectorAll('form').forEach(form => {
-              if (form.id !== 'admin-closing-checklist-form') {
-                form.querySelectorAll('button[type="submit"], input, select, textarea').forEach(el => {
-                  el.disabled = isView;
-                });
-              }
-            });
-          }
+          // Disable/Enable form elements based on view-only settings
+          const isView = item.viewOnly || (role === 'admin' && item.tab !== 'tab-closing');
+          panel.querySelectorAll('form').forEach(form => {
+            if (form.id !== 'admin-closing-checklist-form') {
+              form.querySelectorAll('button[type="submit"], input, select, textarea').forEach(el => {
+                el.disabled = isView;
+              });
+            }
+          });
           
           // Set page header title
-          document.getElementById('page-title').innerText = `${group.label} - ${sub.label}`;
+          document.getElementById('page-title').innerText = item.label;
           
           // Trigger specific panel updates
-          triggerTabRender(sub.tab, sub.filter, sub.viewOnly);
-        });
-        
-        subsContainer.appendChild(subBtn);
-      });
-      
-      header.addEventListener('click', () => {
-        const isExpanded = groupEl.classList.contains('expanded');
-        document.querySelectorAll('.nav-accordion-group').forEach(g => g.classList.remove('expanded'));
-        if (!isExpanded) {
-          groupEl.classList.add('expanded');
+          triggerTabRender(item.tab, item.filter || '', isView);
         }
       });
       
-      groupEl.appendChild(header);
-      groupEl.appendChild(subsContainer);
-      navContainer.appendChild(groupEl);
+      navContainer.appendChild(btn);
     });
 
     // Hide/show metrics bar
@@ -919,12 +585,9 @@
     }
 
     // Trigger loading first tab
-    const firstGroup = navContainer.querySelector('.nav-accordion-group');
-    if (firstGroup) {
-      const firstSubBtn = firstGroup.querySelector('.nav-sub-item');
-      if (firstSubBtn) {
-        firstSubBtn.click();
-      }
+    const firstItem = navContainer.querySelector('.nav-item');
+    if (firstItem) {
+      firstItem.click();
     }
   }
 
@@ -1001,6 +664,7 @@
       renderPurchasesHistory();
     } else if (tabId === 'tab-purchases-bills') {
       renderPurchasesBills();
+      renderPurchasesPending();
     } else if (tabId === 'tab-purchases-pending') {
       renderPurchasesPending();
     } else if (tabId === 'tab-vendors') {
@@ -1066,6 +730,12 @@
     } else if (tabId === 'tab-search') {
       renderSearchTab();
     }
+
+    // Highlight active sub-tab on the page
+    document.querySelectorAll('.page-subtabs-row .subtab-btn').forEach(btn => {
+      const isMatch = btn.dataset.tab === tabId && (btn.dataset.filter || '') === filter;
+      btn.classList.toggle('active', isMatch);
+    });
   }
 
   // --- RENDERING ROUTINES ---
@@ -1783,7 +1453,10 @@
   }
 
   function updateDailyClosingCalculations() {
-    const dateVal = document.getElementById('closing-date').value;
+    const isOwner = (state.role === 'owner');
+    const dateInputId = isOwner ? 'closing-date' : 'closing-date-admin';
+    const dateInput = document.getElementById(dateInputId);
+    const dateVal = dateInput ? dateInput.value : '';
     if (!dateVal) return;
 
     const deliveries = getTable('deliveries');
@@ -2085,7 +1758,7 @@
 
   // Production History (PM-only)
   function renderProductionHistory() {
-    const productions = getTable('productions');
+    const productions = getTable('production_batches');
     const tbody = document.getElementById('production-history-seg-body');
     if (!tbody) return;
     tbody.innerHTML = '';
@@ -2143,7 +1816,7 @@
 
   // Finished Goods (PM-only) — packed PET bottles
   function renderFinishedGoods() {
-    const productions = getTable('productions');
+    const productions = getTable('production_batches');
     const tbody = document.getElementById('finished-goods-status-body');
     if (!tbody) return;
     tbody.innerHTML = '';
@@ -2427,23 +2100,61 @@
   }
 
   // Reports tab (Owner and Accountant)
-  function renderReports(filter = 'sales') {
+  function renderReports(filter = '') {
     const el = document.getElementById('tab-reports');
     if (!el) return;
 
-    // Update active chip
-    document.querySelectorAll('.rpt-chip').forEach(btn => {
-      btn.className = btn.dataset.filter === filter ? 'btn btn-cyan rpt-chip active' : 'btn btn-muted rpt-chip';
-    });
-    const hiddenFilter = document.getElementById('rpt-filter-active');
-    if (hiddenFilter) hiddenFilter.value = filter;
+    if (filter) {
+      if (filter === 'daily' || filter === 'weekly' || filter === 'monthly' || filter === 'yearly') {
+        state.reportPeriod = filter;
+      } else {
+        state.reportType = filter;
+      }
+    }
 
-    // Date range
+    const reportType = state.reportType || 'sales';
+    const reportPeriod = state.reportPeriod || 'monthly';
+
+    // Highlight report type buttons
+    document.querySelectorAll('#report-type-tabs .subtab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.reportType === reportType);
+    });
+    // Highlight report period buttons
+    document.querySelectorAll('#report-period-tabs .subtab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.reportPeriod === reportPeriod);
+    });
+
     const fromEl = document.getElementById('rpt-from');
     const toEl = document.getElementById('rpt-to');
-    const today = new Date().toISOString().split('T')[0];
+
+    // Auto-update from/to based on period selection
+    if (reportPeriod) {
+      const todayDate = new Date();
+      const toVal = todayDate.toISOString().split('T')[0];
+      let fromVal = toVal;
+      if (reportPeriod === 'weekly') {
+        const d = new Date();
+        d.setDate(todayDate.getDate() - 7);
+        fromVal = d.toISOString().split('T')[0];
+      } else if (reportPeriod === 'monthly') {
+        const d = new Date();
+        d.setDate(todayDate.getDate() - 30);
+        fromVal = d.toISOString().split('T')[0];
+      } else if (reportPeriod === 'yearly') {
+        const d = new Date();
+        d.setDate(todayDate.getDate() - 365);
+        fromVal = d.toISOString().split('T')[0];
+      }
+      if (fromEl) fromEl.value = fromVal;
+      if (toEl) toEl.value = toVal;
+    }
+
     const from = fromEl && fromEl.value ? fromEl.value : null;
+    const today = new Date().toISOString().split('T')[0];
     const to = toEl && toEl.value ? toEl.value : today;
+
+    // Use reportType as active filter
+    const activeFilter = reportType;
 
     // Load base data
     const orders = getTable('orders');
@@ -2453,7 +2164,7 @@
     const payments = getTable('payments');
     const customers = getTable('customers');
     const vendors = getTable('vendors');
-    const runs = getTable('production_runs');
+    const runs = getTable('production_batches');
     const purchases = getTable('purchases');
 
     // Compute base KPIs
@@ -2487,7 +2198,7 @@
     const tableTitle = document.getElementById('rpt-table-title');
     if (!chart || !tbody) return;
 
-    if (filter === 'sales' || filter === 'daily' || filter === 'weekly' || filter === 'monthly' || filter === 'yearly') {
+    if (activeFilter === 'sales') {
       if (chartTitle) chartTitle.innerText = 'Sales Revenue (Last 7 Days)';
       if (tableTitle) tableTitle.innerText = 'Sales Transactions';
 
@@ -2519,7 +2230,7 @@
         });
       }
 
-    } else if (filter === 'expense') {
+    } else if (activeFilter === 'expense') {
       if (chartTitle) chartTitle.innerText = 'Expense Breakdown by Category';
       if (tableTitle) tableTitle.innerText = 'Expense Records';
 
@@ -2539,14 +2250,14 @@
       });
       if (expenses.length === 0) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No expenses logged yet.</td></tr>';
 
-    } else if (filter === 'profit') {
+    } else if (activeFilter === 'profit') {
       if (chartTitle) chartTitle.innerText = 'Revenue vs Expenses';
       if (tableTitle) tableTitle.innerText = 'Profit Summary';
       const maxV = Math.max(totalRevenue, totalExpenses) || 1000;
       chart.innerHTML = `<div class="chart-bar-item" style="flex:1"><span class="chart-bar-value">Rs. ${totalRevenue.toLocaleString()}</span><div class="chart-bar-fill" style="height:${(totalRevenue/maxV)*100}%; background:var(--color-success); width:60%"></div><span class="chart-bar-label">Revenue</span></div><div class="chart-bar-item" style="flex:1"><span class="chart-bar-value">Rs. ${totalExpenses.toLocaleString()}</span><div class="chart-bar-fill" style="height:${(totalExpenses/maxV)*100}%; background:var(--color-danger); width:60%"></div><span class="chart-bar-label">Expenses</span></div><div class="chart-bar-item" style="flex:1"><span class="chart-bar-value">Rs. ${netProfit.toLocaleString()}</span><div class="chart-bar-fill" style="height:${Math.max((Math.abs(netProfit)/maxV)*100,2)}%; background:${netProfit>=0?'var(--cyan-primary)':'#ef4444'}; width:60%"></div><span class="chart-bar-label">Net Profit</span></div>`;
       tbody.innerHTML = `<tr><td>${today}</td><td>Total Revenue</td><td>All Sources</td><td class="bold text-cyan">Rs. ${totalRevenue.toLocaleString()}</td><td>—</td></tr><tr><td>${today}</td><td>Total Expenses</td><td>Operating</td><td class="bold text-danger">Rs. ${totalExpenses.toLocaleString()}</td><td>—</td></tr><tr><td>${today}</td><td>Net Profit</td><td>—</td><td class="bold ${netProfit>=0?'text-success':'text-danger'}">Rs. ${netProfit.toLocaleString()}</td><td>${margin}% margin</td></tr>`;
 
-    } else if (filter === 'production') {
+    } else if (activeFilter === 'production') {
       if (chartTitle) chartTitle.innerText = 'Production Batches (Last 7)';
       if (tableTitle) tableTitle.innerText = 'Production Records';
       const recentRuns = [...runs].sort((a,b) => new Date(b.date) - new Date(a.date)).slice(0, 7);
@@ -2556,7 +2267,7 @@
       runs.slice().reverse().slice(0, 20).forEach(r => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${r.date}</td><td>Batch #${r.id}</td><td>0.5L: ${r.qty05L||0} / 1.5L: ${r.qty15L||0}</td><td class="bold text-success">${parseFloat(r.qty05L||0)*12+parseFloat(r.qty15L||0)*6} bottles</td><td>${(parseFloat(r.broken05L||0)+parseFloat(r.broken15L||0))} broken</td></tr>`; tbody.appendChild(tr); });
       if (runs.length === 0) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No production records.</td></tr>';
 
-    } else if (filter === 'credit') {
+    } else if (activeFilter === 'credit') {
       if (chartTitle) chartTitle.innerText = 'Customer Outstanding Balances';
       if (tableTitle) tableTitle.innerText = 'Customer Credit Report';
       const withBalance = customers.filter(c => parseFloat(c.balance || 0) > 0);
@@ -2566,21 +2277,23 @@
       customers.forEach(c => { const tr = document.createElement('tr'); const b = parseFloat(c.balance||0); tr.innerHTML = `<td class="bold">${c.name}</td><td>${c.phone||'—'}</td><td>${c.type}</td><td class="bold ${b>0?'text-danger':'text-success'}">Rs. ${b.toLocaleString()}</td><td>Rs. ${parseFloat(c.creditLimit||5000).toLocaleString()}</td>`; tbody.appendChild(tr); });
       if (customers.length === 0) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No customers registered.</td></tr>';
 
-    } else if (filter === 'vendor') {
-      if (chartTitle) chartTitle.innerText = 'Vendor Procurement Totals';
+    } else if (activeFilter === 'vendor') {
+      if (chartTitle) chartTitle.innerText = 'Vendor Outstanding Payables';
       if (tableTitle) tableTitle.innerText = 'Vendor Report';
-      chart.innerHTML = '<p class="description-text" style="text-align:center; padding:30px;">Vendor chart — data from purchase records.</p>';
+      const withPayable = vendors.filter(v => getVendorPayable(v.id) > 0);
+      const maxVP = Math.max(...withPayable.map(v => getVendorPayable(v.id))) || 1000;
+      chart.innerHTML = withPayable.slice(0, 8).map(v => { const b = getVendorPayable(v.id); return `<div class="chart-bar-item"><span class="chart-bar-value">Rs. ${b.toLocaleString()}</span><div class="chart-bar-fill" style="height:${Math.max((b/maxVP)*100,2)}%; background:#ef4444;"></div><span class="chart-bar-label">${v.name.split(' ')[0]}</span></div>`; }).join('') || '<p class="description-text">No outstanding vendor payables.</p>';
       tbody.innerHTML = '';
-      vendors.forEach(v => { const vPurchases = purchases.filter(p => p.vendorName === v.name); const total = vPurchases.reduce((acc, p) => acc + parseFloat(p.quantity||0)*parseFloat(p.unitCost||0), 0); const tr = document.createElement('tr'); tr.innerHTML = `<td class="bold">${v.name}</td><td>${v.phone||'—'}</td><td>${vPurchases.length} orders</td><td class="bold text-danger">Rs. ${total.toLocaleString()}</td><td>Rs. ${parseFloat(v.balance||0).toLocaleString()}</td>`; tbody.appendChild(tr); });
+      vendors.forEach(v => { const vPurchases = purchases.filter(p => p.vendorId === v.id); const total = vPurchases.reduce((acc, p) => acc + parseFloat(p.quantity||0)*parseFloat(p.unitCost||0), 0); const bal = getVendorPayable(v.id); const tr = document.createElement('tr'); tr.innerHTML = `<td class="bold">${v.name}</td><td>${v.phone||'—'}</td><td>${vPurchases.length} orders</td><td class="bold text-danger">Rs. ${total.toLocaleString()}</td><td>Rs. ${bal.toLocaleString()}</td>`; tbody.appendChild(tr); });
       if (vendors.length === 0) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px;">No vendors registered.</td></tr>';
 
-    } else if (filter === 'inventory') {
+    } else if (activeFilter === 'inventory') {
       if (chartTitle) chartTitle.innerText = 'Inventory Stock Levels';
       if (tableTitle) tableTitle.innerText = 'Inventory Summary';
       chart.innerHTML = '<p class="description-text" style="text-align:center; padding:30px;">Inventory chart — see Inventory module for details.</p>';
       tbody.innerHTML = '<tr><td>—</td><td>Raw Materials + Finished Goods</td><td>Stock</td><td class="bold text-cyan">See Inventory Module</td><td>—</td></tr>';
 
-    } else if (filter === 'bottle') {
+    } else if (activeFilter === 'bottle') {
       if (chartTitle) chartTitle.innerText = 'Bottle Ledger Summary';
       if (tableTitle) tableTitle.innerText = 'Bottle Report';
       const totalHeld = customers.reduce((acc, c) => acc + parseFloat(c.bottlesHeld || 0), 0);
@@ -2736,6 +2449,7 @@
     saveTable('orders', orders);
 
     alert("SUCCESS: Order placed successfully.");
+    logActivity(`Placed CRM Customer Order #${newId} for Customer ID ${customerId}, Type ${type}, Total Charged Rs. ${charged}`);
     document.getElementById('quick-order-form').reset();
     selectCustomer(customerId);
     renderDashboard();
@@ -2886,6 +2600,7 @@
     saveTable('orders', orders);
 
     alert("SUCCESS: Delivery logged successfully.");
+    logActivity(`Logged Delivery for Order #${orderId}: Delivered Qty(19L/0.5L/1.5L) = ${qtyDeliv}/${qty05Deliv}/${qty15Deliv}, Cash Collected = Rs. ${cash}`);
     document.getElementById('modal-delivery').classList.add('hidden');
     renderPendingOrders();
     renderDashboard();
@@ -2968,6 +2683,7 @@
     }
 
     saveTable('inventory_transactions', invTxns);
+    logActivity(`Posted PET Production Batch #${bId}: 0.5L=${q05} packs, 1.5L=${q15} packs`);
     alert("SUCCESS: Production run posted.");
     document.getElementById('pet-production-form').reset();
     updateProductionRunLive();
@@ -3082,6 +2798,7 @@
     });
     saveTable('expenses', expenses);
 
+    logActivity(`Recorded Operating Expense Ref #${newId}: Category ${type}, Amount Rs. ${amount}`);
     alert("SUCCESS: Expense recorded successfully.");
     document.getElementById('expense-form').reset();
     renderExpenses();
@@ -3142,6 +2859,7 @@
     });
     saveTable('expenses', expenses);
 
+    logActivity(`Posted Counter Spot Sale Ref #${newId}: Litres ${litres}L, Cash Rs. ${cash}, Credit Rs. ${credit}`);
     alert("SUCCESS: Counter sale posted successfully.");
     document.getElementById('spot-sale-form').reset();
     renderExpenses();
@@ -3219,6 +2937,7 @@
     saveTable('daily_closings', closings);
 
     alert(`SUCCESS: Day closed. All entries locked for ${date}.`);
+    logActivity(`Submitted Daily Closing for ${date}: Deliveries=${deliveryCount}, Sales=Rs. ${sales}, Cash Collected=Rs. ${cashCollected}`);
     renderDailyClosing();
     updateDailyClosingCalculations();
   });
@@ -3248,6 +2967,7 @@
     saveTable('blowing_transactions', txns);
 
     alert("SUCCESS: Raw preforms purchase logged.");
+    logActivity(`Blowing Division: Purchased raw preforms: Type ${type}, Qty ${qty} kg`);
     document.getElementById('blow-preform-purchase-form').reset();
     renderBlowing();
   });
@@ -3302,6 +3022,7 @@
     saveTable('blowing_transactions', txns);
 
     alert("SUCCESS: Bottles blown successfully.");
+    logActivity(`Blowing Division: Blown Bottles Production: Brand ${brand}, Size ${size}, Type ${type}, Qty ${qty}`);
     document.getElementById('blow-production-form').reset();
     updateBlowingProductionLive();
     renderBlowing();
@@ -3349,6 +3070,7 @@
     saveTable('blowing_transactions', txns);
 
     alert("SUCCESS: Inventory transfer posted.");
+    logActivity(`Blowing Division: Blown Bottles Transfer: Moved ${qty} pcs of ${brand} ${size} ${type} from Factory to Warehouse`);
     document.getElementById('blow-transfer-form').reset();
     renderBlowing();
   });
@@ -3418,6 +3140,7 @@
     saveTable('blowing_transactions', txns);
 
     alert("SUCCESS: Empty bottles sale logged.");
+    logActivity(`Blowing Division: Blown Bottles Sale: Sold ${qty} pcs of ${brand} ${size} ${type} from ${loc} to customer ${customerName}`);
     document.getElementById('blow-sale-form').reset();
     renderBlowing();
   });
@@ -3458,7 +3181,7 @@
       remarks
     });
     saveTable('customers', customers);
-
+    logActivity(`Registered new Customer Profile: Name ${name}, Phone ${phone}`);
     alert("SUCCESS: Customer registered successfully.");
     document.getElementById('modal-customer-form').reset();
     document.getElementById('modal-customer').classList.add('hidden');
@@ -3482,7 +3205,7 @@
     const vId = vendors.length > 0 ? Math.max(...vendors.map(v => v.id)) + 1 : 1;
     vendors.push({ id: vId, name, phone, remarks });
     saveTable('vendors', vendors);
-
+    logActivity(`Registered new Vendor Profile: Name ${name}, Phone ${phone}`);
     alert("SUCCESS: Vendor registered.");
     document.getElementById('modal-vendor-form').reset();
     document.getElementById('modal-vendor').classList.add('hidden');
@@ -3513,7 +3236,7 @@
       paidAt: date
     });
     saveTable('vendor_payments', payments);
-
+    logActivity(`Logged Vendor Payment: Vendor ID ${vendorId}, Amount Rs. ${amount}, Method ${method}`);
     alert("SUCCESS: Vendor payment recorded.");
     document.getElementById('modal-vendor-payment').classList.add('hidden');
     renderPurchases();
@@ -3633,22 +3356,21 @@
     const tbody = document.getElementById('dash-low-stock-tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
-    const rawList = [
-      { name: 'Sodium Powder', qty: 2.5, limit: 3.0, unit: 'kg' },
-      { name: 'Calcium Powder', qty: 12.0, limit: 10.0, unit: 'kg' },
-      { name: 'Magnesium Powder', qty: 4.2, limit: 5.0, unit: 'kg' }
-    ];
+    const items = getTable('items');
     let count = 0;
-    rawList.forEach(item => {
-      if (item.qty < item.limit) {
+    items.forEach(item => {
+      if (item.category !== 'raw_material') return;
+      const stock = getItemStock(item.id);
+      const reorder = parseFloat(item.reorderLevel || 0);
+      if (reorder > 0 && stock <= reorder) {
         count++;
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="bold">${item.name}</td>
-          <td class="text-danger bold">${item.qty} ${item.unit}</td>
-          <td>${item.limit} ${item.unit}</td>
+          <td class="text-danger bold">${stock.toFixed(2)} ${item.unit}</td>
+          <td>${reorder} ${item.unit}</td>
           <td><span class="badge badge-warning">Low Stock</span></td>
-          <td><button class="btn btn-xs btn-cyan" onclick="alert('Procurement request posted!')">Reorder</button></td>
+          <td><button class="btn btn-xs btn-cyan" onclick="triggerReorder(${item.id})">Reorder</button></td>
         `;
         tbody.appendChild(tr);
       }
@@ -3720,13 +3442,14 @@
     const customers = getTable('customers');
     tbody.innerHTML = '';
     customers.forEach(c => {
+      const held = getCustomerBottles(c.id);
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="bold">${c.name}</td>
         <td><span class="badge">${c.type}</span></td>
-        <td class="bold text-cyan">${c.bottlesHeld || 0} pcs</td>
+        <td class="bold text-cyan">${held} pcs</td>
         <td>—</td>
-        <td><button class="btn btn-xs btn-muted" onclick="alert('Write-off recorded')">Write off</button></td>
+        <td><button class="btn btn-xs btn-muted" onclick="triggerCustomerBottleWriteOff(${c.id})">Write off</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -3921,7 +3644,7 @@
   function renderProductionReports() {
     const tbody = document.getElementById('production-reports-tbody');
     if (!tbody) return;
-    const runList = getTable('production_runs');
+    const runList = getTable('production_batches');
     tbody.innerHTML = '';
     if (runList.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6" class="text-center" style="padding:15px;">No production logs yet.</td></tr>`;
@@ -3950,7 +3673,7 @@
     const chart = document.getElementById('production-water-chart');
     const tbody = document.getElementById('production-water-tbody');
     if (!chart || !tbody) return;
-    const runList = getTable('production_runs');
+    const runList = getTable('production_batches');
     tbody.innerHTML = '';
     
     let html = '';
@@ -3996,7 +3719,7 @@
   function renderProductionMineral() {
     const tbody = document.getElementById('production-mineral-tbody');
     if (!tbody) return;
-    const runs = getTable('production_runs');
+    const runs = getTable('production_batches');
     tbody.innerHTML = '';
     if (runs.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:15px;">No mineral dosing history found.</td></tr>';
@@ -4019,7 +3742,7 @@
     const tbody = document.getElementById('inventory-txns-tbody');
     if (!tbody) return;
     const purchases = getTable('purchases');
-    const runs = getTable('production_runs');
+    const runs = getTable('production_batches');
     
     let txns = [];
     purchases.forEach(p => {
@@ -4064,21 +3787,30 @@
     const tbody = document.getElementById('inventory-low-stock-tbody');
     if (!tbody) return;
     tbody.innerHTML = '';
-    const rawList = [
-      { name: 'Sodium Powder', qty: 2.5, safety: 3.0, urgency: 'Urgent' },
-      { name: 'Calcium Powder', qty: 12.0, safety: 10.0, urgency: 'None' },
-      { name: 'Magnesium Powder', qty: 4.2, safety: 5.0, urgency: 'High' }
-    ];
-    rawList.forEach(item => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td class="bold">${item.name}</td>
-        <td>${item.qty} kg</td>
-        <td>${item.safety} kg</td>
-        <td><span class="badge ${item.urgency === 'Urgent' ? 'badge-danger' : (item.urgency === 'High' ? 'badge-warning' : 'badge-success')}">${item.urgency}</span></td>
-      `;
-      tbody.appendChild(tr);
+    const items = getTable('items');
+    let count = 0;
+    items.forEach(item => {
+      if (item.category !== 'raw_material') return;
+      const stock = getItemStock(item.id);
+      const reorder = parseFloat(item.reorderLevel || 0);
+      if (reorder > 0 && stock <= reorder) {
+        count++;
+        const ratio = reorder > 0 ? (stock / reorder) : 1;
+        const urgency = ratio <= 0.25 ? 'Urgent' : ratio <= 0.6 ? 'High' : 'Medium';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="bold">${item.name}</td>
+          <td>${stock.toFixed(2)} ${item.unit}</td>
+          <td>${reorder} ${item.unit}</td>
+          <td><span class="badge ${urgency === 'Urgent' ? 'badge-danger' : (urgency === 'High' ? 'badge-warning' : 'badge-success')}">${urgency}</span></td>
+          <td><button class="btn btn-xs btn-cyan" onclick="triggerReorder(${item.id})">Reorder</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
     });
+    if (count === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center" style="padding:15px;">All items are at safe levels.</td></tr>`;
+    }
   }
 
   function renderInventoryAdjust() {
@@ -4127,7 +3859,7 @@
   function renderBottleBroken() {
     const tbody = document.getElementById('bottle-broken-tbody');
     if (!tbody) return;
-    const runs = getTable('production_runs');
+    const runs = getTable('production_batches');
     tbody.innerHTML = '';
     runs.forEach(r => {
       const totalBroken = parseFloat(r.broken05L || 0) + parseFloat(r.broken15L || 0);
@@ -4150,19 +3882,75 @@
   function renderBottleLost() {
     const tbody = document.getElementById('bottle-lost-tbody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding:15px;">No written-off empty bottles records.</td></tr>';
+    const txns = getTable('bottle_transactions').filter(t => t.txnType === 'lost');
+    tbody.innerHTML = '';
+    if (txns.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding:15px;">No written-off empty bottles records.</td></tr>';
+      return;
+    }
+    txns.forEach(t => {
+      const tr = document.createElement('tr');
+      const custName = t.customerId ? (getTable('customers').find(c => c.id === t.customerId)?.name || 'Unknown') : 'Factory';
+      tr.innerHTML = `
+        <td>${t.createdAt ? t.createdAt.split('T')[0] : '—'}</td>
+        <td class="bold text-danger">${t.qty} pcs</td>
+        <td>${custName}</td>
+        <td>${t.note || '—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 
   function renderBottlePurchased() {
     const tbody = document.getElementById('bottle-purchased-tbody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:15px;">No new reusable bottle purchases logged.</td></tr>';
+    const txns = getTable('bottle_transactions').filter(t => t.txnType === 'purchased_new');
+    tbody.innerHTML = '';
+    if (txns.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:15px;">No new reusable bottle purchases logged.</td></tr>';
+      return;
+    }
+    txns.forEach(t => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${t.createdAt ? t.createdAt.split('T')[0] : '—'}</td>
+        <td class="bold text-success">${t.qty} pcs</td>
+        <td>Rs. 700</td>
+        <td class="bold">Rs. ${(t.qty * 700).toLocaleString()}</td>
+        <td>Standard Supplier</td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 
   function renderBottleTxns() {
     const tbody = document.getElementById('bottle-txns-tbody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding:15px;">No transactions recorded.</td></tr>';
+    const txns = getTable('bottle_transactions').sort((a,b) => b.id - a.id);
+    tbody.innerHTML = '';
+    if (txns.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding:15px;">No transactions recorded.</td></tr>';
+      return;
+    }
+    txns.forEach(t => {
+      const tr = document.createElement('tr');
+      const custName = t.customerId ? (getTable('customers').find(c => c.id === t.customerId)?.name || 'Unknown') : 'Factory';
+      const actionLabels = {
+        delivered_to_customer: 'Delivered to Customer',
+        returned_good: 'Returned Good',
+        returned_broken: 'Returned Broken',
+        lost: 'Lost / Write-off',
+        purchased_new: 'Purchased New',
+        factory_adjustment: 'Factory Adjustment'
+      };
+      tr.innerHTML = `
+        <td>${t.createdAt ? t.createdAt.split('T')[0] : '—'}</td>
+        <td><span class="badge ${t.txnType.includes('return') || t.txnType.includes('purchased') ? 'badge-success' : (t.txnType.includes('delivered') ? 'badge-primary' : 'badge-danger')}">${actionLabels[t.txnType] || t.txnType}</span></td>
+        <td class="bold">${t.qty}</td>
+        <td>${custName}</td>
+      `;
+      tbody.appendChild(tr);
+    });
   }
 
   function renderPurchasesHistory() {
@@ -4192,13 +3980,55 @@
   function renderPurchasesBills() {
     const tbody = document.getElementById('purchases-bills-tbody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:15px;">All purchase bills are currently cleared.</td></tr>';
+    const purchases = getTable('purchases');
+    tbody.innerHTML = '';
+    
+    let count = 0;
+    purchases.sort((a,b) => b.id - a.id).forEach(p => {
+      const payable = getVendorPayable(p.vendorId);
+      if (payable > 0) {
+        count++;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="bold">#BILL-${p.id}</td>
+          <td>${p.date || '—'}</td>
+          <td class="bold">${p.vendorName || 'Vendor'}</td>
+          <td class="bold text-danger">Rs. ${(p.quantity * p.unitCost).toLocaleString()}</td>
+          <td><button class="btn btn-xs btn-cyan" onclick="triggerVendorPayment(${p.vendorId})">Pay Vendor</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+    });
+    if (count === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:15px;">All purchase bills are currently cleared.</td></tr>';
+    }
   }
 
   function renderPurchasesPending() {
     const tbody = document.getElementById('purchases-pending-tbody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding:15px;">No pending procures scheduled.</td></tr>';
+    const items = getTable('items');
+    tbody.innerHTML = '';
+    
+    let count = 0;
+    items.forEach(item => {
+      const qty = getItemStock(item.id);
+      const safetyLevel = parseFloat(item.reorderLevel || 0);
+      if (safetyLevel > 0 && qty <= safetyLevel && item.category === 'raw_material') {
+        count++;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="bold">${item.name}</td>
+          <td class="bold text-danger">${qty.toFixed(2)} ${item.unit}</td>
+          <td>${safetyLevel} ${item.unit}</td>
+          <td><button class="btn btn-xs btn-cyan" onclick="triggerReorder(${item.id})">Create Purchase Order</button></td>
+        `;
+        tbody.appendChild(tr);
+      }
+    });
+    if (count === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="padding:15px;">All raw materials are currently at safe stock levels.</td></tr>';
+    }
   }
 
   function renderVendorAddTab() {
@@ -4256,13 +4086,13 @@
     const vendors = getTable('vendors');
     tbody.innerHTML = '';
     vendors.forEach(v => {
-      const bal = parseFloat(v.balance || 0);
+      const bal = getVendorPayable(v.id);
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="bold">${v.name}</td>
         <td>${v.phone || '—'}</td>
         <td class="bold text-danger">Rs. ${bal.toLocaleString()}</td>
-        <td><button class="btn btn-xs btn-cyan" onclick="alert('Selected')">Pay Supplier</button></td>
+        <td><button class="btn btn-xs btn-cyan" onclick="triggerVendorPayment(${v.id})">Pay Supplier</button></td>
       `;
       tbody.appendChild(tr);
     });
@@ -4551,6 +4381,10 @@
   document.getElementById('prod-qty-05l').addEventListener('input', updateProductionRunLive);
   document.getElementById('prod-qty-15l').addEventListener('input', updateProductionRunLive);
   document.getElementById('closing-date').addEventListener('change', updateDailyClosingCalculations);
+  const closingDateAdmin = document.getElementById('closing-date-admin');
+  if (closingDateAdmin) {
+    closingDateAdmin.addEventListener('change', updateDailyClosingCalculations);
+  }
 
   // Blowing division forms selection tab triggers
   const blowForms = document.querySelectorAll('.blow-action-form');
@@ -4606,6 +4440,7 @@
     }
     orders.push(newOrder);
     saveTable('orders', orders);
+    logActivity(`Placed Standalone Order #${newOrder.id} for Customer ID ${customerId}, Type ${type}, Value Rs. ${charged}`);
     alert('SUCCESS: Order posted.');
     e.target.reset();
     renderNewOrderForm();
@@ -4626,6 +4461,7 @@
     const payments = getTable('payments');
     payments.push({ id: nextId(payments), customerId, amount, paidAt: date, mode, reference, loggedByRole: state.role });
     saveTable('payments', payments);
+    logActivity(`Recorded Payment of Rs. ${amount} for Customer ID ${customerId} via ${mode}`);
     alert('SUCCESS: Payment recorded.');
     e.target.reset();
     renderPaymentsTab();
@@ -4655,6 +4491,7 @@
       closings.push({ id: nextId(closings), date: today, adminVerified: true, adminVerifiedAt: new Date().toISOString(), closedByRole: 'admin' });
     }
     saveTable('daily_closings', closings);
+    logActivity(`Admin verified and confirmed Daily Closing checklist for date ${today}`);
     alert('SUCCESS: Day verified and confirmed by Admin Supervisor.');
     e.target.reset();
     renderDailyClosing();
@@ -4692,6 +4529,7 @@
 
     // Re-render
     renderDashboard();
+    logActivity(`Switched active company context to ${companyName === 'aquasphere' ? 'AquaSphere' : 'Badana Ind.'}`);
     
     // Find active tab and trigger its render
     const activeNav = document.querySelector('#main-nav-tabs .nav-item.active');
@@ -4705,11 +4543,281 @@
     state.role = e.target.value;
     applyRoleSecurity();
     renderDashboard();
+    logActivity(`Switched active logged role context to ${e.target.value.toUpperCase()}`);
   });
+
+  // --- WINDOW LEVEL HELPERS & DEEP-LINKS ---
+  window.switchTab = function(tabId, filter = '') {
+    let selector = `.nav-item[data-tab="${tabId}"]`;
+    if (filter) {
+      selector += `[data-filter="${filter}"]`;
+    }
+    const btn = document.querySelector(selector) || document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+    if (btn) {
+      btn.click();
+    } else {
+      document.querySelectorAll('.content-panel .tab-panel').forEach(p => p.classList.remove('active'));
+      const panel = document.getElementById(tabId);
+      if (panel) {
+        panel.classList.add('active');
+        triggerTabRender(tabId, filter, false);
+      }
+    }
+  };
+
+  window.setReportType = function(type) {
+    state.reportType = type;
+    renderReports();
+  };
+
+  window.setReportPeriod = function(period) {
+    state.reportPeriod = period;
+    renderReports();
+  };
+
+  window.togglePurchasesBillsTab = function(subtab) {
+    const cardBills = document.getElementById('card-purchases-bills');
+    const cardPending = document.getElementById('card-purchases-pending');
+    const btnBills = document.getElementById('btn-subtab-bills');
+    const btnPending = document.getElementById('btn-subtab-pending');
+    
+    if (subtab === 'bills') {
+      if (cardBills) cardBills.classList.remove('hidden');
+      if (cardPending) cardPending.classList.add('hidden');
+      if (btnBills) btnBills.classList.add('active');
+      if (btnPending) btnPending.classList.remove('active');
+    } else {
+      if (cardBills) cardBills.classList.add('hidden');
+      if (cardPending) cardPending.classList.remove('hidden');
+      if (btnBills) btnBills.classList.remove('active');
+      if (btnPending) btnPending.classList.add('active');
+    }
+  };
+
+  window.filterExpensesList = function(category) {
+    document.querySelectorAll('#expenses-filter-tabs .subtab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.expenseFilter === category);
+    });
+    renderExpenses(category);
+  };
+
+  window.triggerReorder = function(itemId) {
+    const itemSelect = document.getElementById('purchase-item');
+    if (itemSelect) {
+      itemSelect.value = itemId;
+      itemSelect.dispatchEvent(new Event('change'));
+    }
+    switchTab('tab-purchases');
+    logActivity(`Initiated procurement reorder flow for item ID ${itemId}`);
+  };
+
+  window.triggerVendorPayment = function(vendorId) {
+    const vendors = getTable('vendors');
+    const v = vendors.find(vd => vd.id === vendorId);
+    if (!v) return;
+    const balance = getVendorPayable(vendorId);
+    
+    document.getElementById('pay-vendor-id').value = vendorId;
+    document.getElementById('pay-vendor-name').innerText = v.name;
+    document.getElementById('pay-vendor-balance').innerText = `Rs. ${balance.toLocaleString()}`;
+    document.getElementById('pay-vendor-amount').value = balance;
+    
+    document.getElementById('modal-vendor-payment').classList.remove('hidden');
+    logActivity(`Opened vendor payment modal for ${v.name}`);
+  };
+
+  window.triggerCustomerBottleWriteOff = async function(customerId) {
+    const customers = getTable('customers');
+    const c = customers.find(x => x.id === customerId);
+    if (!c) return;
+    const held = getCustomerBottles(customerId);
+    if (held <= 0) {
+      alert("ERROR: Customer has no bottles to write off.");
+      return;
+    }
+    const qtyStr = prompt(`Customer holds ${held} bottles. Enter number of bottles to write off / mark lost:`, held);
+    if (!qtyStr) return;
+    const qty = parseInt(qtyStr, 10);
+    if (isNaN(qty) || qty <= 0 || qty > held) {
+      alert("ERROR: Invalid quantity.");
+      return;
+    }
+    const note = prompt("Enter reason for write-off / loss:", "Bottles lost by customer");
+    if (note === null) return;
+    
+    const bt = getTable('bottle_transactions');
+    bt.push({
+      id: bt.length > 0 ? Math.max(...bt.map(t => t.id)) + 1 : 1,
+      customerId: customerId,
+      txnType: 'lost',
+      qty,
+      refDeliveryId: null,
+      note,
+      createdAt: new Date().toISOString()
+    });
+    saveTable('bottle_transactions', bt);
+    
+    logActivity(`Wrote off ${qty} empty bottles for customer ${c.name}`);
+    alert(`SUCCESS: Wrote off ${qty} bottles.`);
+    renderCustomerBottles();
+    renderDashboard();
+  };
+
+  function bindSettingsActions() {
+    const btnBackup = document.getElementById('btn-download-backup');
+    const btnExportBulk = document.getElementById('btn-export-bulk');
+    const btnImportBulk = document.getElementById('btn-import-bulk');
+    const textareaBulk = document.getElementById('bulk-db-textarea');
+
+    if (btnBackup) {
+      btnBackup.addEventListener('click', (e) => {
+        e.preventDefault();
+        const backup = {};
+        const tables = [
+          'customers', 'items', 'inventory_transactions', 'bottle_transactions',
+          'vendors', 'orders', 'deliveries', 'payments', 'production_batches',
+          'purchases', 'vendor_payments', 'expenses', 'daily_closings',
+          'blowing_transactions', 'blowing_sales', 'activity_logs'
+        ];
+        tables.forEach(table => {
+          backup[table] = getTable(table);
+        });
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `aquasphere_os_backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        logActivity('Downloaded database backup JSON');
+        alert('SUCCESS: Backup downloaded successfully.');
+      });
+    }
+
+    const tables = [
+      'customers', 'items', 'inventory_transactions', 'bottle_transactions',
+      'vendors', 'orders', 'deliveries', 'payments', 'production_batches',
+      'purchases', 'vendor_payments', 'expenses', 'daily_closings',
+      'blowing_transactions', 'blowing_sales', 'activity_logs'
+    ];
+
+    if (btnExportBulk && textareaBulk) {
+      btnExportBulk.addEventListener('click', (e) => {
+        e.preventDefault();
+        const backup = {};
+        tables.forEach(table => {
+          backup[table] = getTable(table);
+        });
+        textareaBulk.value = JSON.stringify(backup, null, 2);
+        logActivity('Exported bulk database JSON lines');
+        alert('SUCCESS: Database state exported to text area.');
+      });
+    }
+
+    if (btnImportBulk && textareaBulk) {
+      btnImportBulk.addEventListener('click', (e) => {
+        e.preventDefault();
+        const str = textareaBulk.value.trim();
+        if (!str) {
+          alert('ERROR: Text area is empty.');
+          return;
+        }
+        try {
+          const data = JSON.parse(str);
+          tables.forEach(table => {
+            if (data[table] !== undefined) {
+              saveTable(table, data[table]);
+            }
+          });
+          logActivity('Imported bulk database JSON lines');
+          alert('SUCCESS: Database backup imported successfully.');
+          renderDashboard();
+        } catch (err) {
+          alert('ERROR: Invalid JSON structure. Check your bulk lines input.');
+        }
+      });
+    }
+
+    const btnLogs = document.getElementById('btn-view-logs');
+    if (btnLogs) {
+      btnLogs.addEventListener('click', (e) => {
+        e.preventDefault();
+        const logsContainer = document.getElementById('settings-logs-container');
+        if (logsContainer) {
+          logsContainer.classList.toggle('hidden');
+          if (!logsContainer.classList.contains('hidden')) {
+            renderSettingsLogs();
+          }
+        }
+      });
+    }
+  }
+
+  function renderSettingsLogs() {
+    const tbody = document.getElementById('settings-logs-body');
+    if (!tbody) return;
+    const logs = getTable('activity_logs').sort((a,b) => b.id - a.id);
+    tbody.innerHTML = '';
+    if (logs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" class="text-center" style="padding:15px;">No integrity logs found.</td></tr>';
+      return;
+    }
+    logs.forEach(l => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${l.timestamp}</td>
+        <td><span class="badge badge-warning">${l.role}</span></td>
+        <td>${l.action}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function injectSubtabs() {
+    Object.entries(SUB_TABS_CONFIG).forEach(([mainTabId, subs]) => {
+      if (subs.length <= 1) return;
+      if (mainTabId === 'tab-reports') return; // reports uses inline HTML sub-tabs
+
+      // Collect all unique target panels for this group
+      const targetPanelIds = [...new Set(subs.map(s => s.tab))];
+
+      targetPanelIds.forEach(targetTabId => {
+        const panel = document.getElementById(targetTabId);
+        if (!panel) return;
+
+        const card = panel.querySelector('.panel-card');
+        if (!card) return;
+
+        if (card.querySelector('.page-subtabs-row')) return;
+
+        const row = document.createElement('div');
+        row.className = 'page-subtabs-row';
+        row.style.marginBottom = '20px';
+
+        subs.forEach(sub => {
+          const btn = document.createElement('button');
+          btn.className = 'subtab-btn';
+          btn.dataset.tab = sub.tab;
+          btn.dataset.filter = sub.filter || '';
+          btn.innerText = sub.label;
+          if (sub.tab === targetTabId && (sub.filter || '') === '') {
+            btn.classList.add('active');
+          }
+          btn.addEventListener('click', () => {
+            switchTab(sub.tab, sub.filter || '');
+          });
+          row.appendChild(btn);
+        });
+
+        card.insertBefore(row, card.firstChild);
+      });
+    });
+  }
 
   // --- BOOTSTRAP INITIALIZATION ---
   function initApp() {
     initDatabase();
+    bindSettingsActions();
     
     // Set current date in top badge & forms
     const todayStr = new Date().toISOString().split('T')[0];
@@ -4721,6 +4829,7 @@
 
     // Initial setups
     applyRoleSecurity();
+    injectSubtabs();
     renderDashboard();
     renderCRM();
   }
