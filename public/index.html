@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aqua Sphere OS</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Main Layout Wrapper -->
+  <div class="layout-wrapper">
+    
+    <!-- Left Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-logo">
+        <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 11 5 15a7 7 0 0 0 7 7z"/>
+        </svg>
+        <div class="logo-text">
+          <h2>Aqua Sphere OS</h2>
+          <span class="sub-text">Management System</span>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="sidebar-nav" id="main-nav-tabs">
+        <button class="nav-item active" data-tab="tab-crm">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label">CRM & Order Desk</span>
+        </button>
+        <button class="nav-item" data-tab="tab-orders">
+          <span class="nav-icon">🚚</span>
+          <span class="nav-label">Deliveries (<span id="pending-orders-count">0</span>)</span>
+        </button>
+        <button class="nav-item" data-tab="tab-production">
+          <span class="nav-icon">🏭</span>
+          <span class="nav-label">PET Production</span>
+        </button>
+        <button class="nav-item" data-tab="tab-purchases">
+          <span class="nav-icon">📦</span>
+          <span class="nav-label">Purchases & Vendors</span>
+        </button>
+        <button class="nav-item" data-tab="tab-expenses">
+          <span class="nav-icon">💵</span>
+          <span class="nav-label">Expenses & Counter Sales</span>
+        </button>
+        <button class="nav-item" data-tab="tab-closing">
+          <span class="nav-icon">🔒</span>
+          <span class="nav-label">Daily Closing</span>
+        </button>
+        <button class="nav-item" data-tab="tab-blowing">
+          <span class="nav-icon">🌀</span>
+          <span class="nav-label">Blowing Division</span>
+        </button>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="active-company-badge" id="sidebar-company-label">AquaSphere</div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-container">
+      
+      <!-- Top Control Bar -->
+      <header class="top-bar">
+        <div class="top-bar-left">
+          <h1 id="page-title">CRM & Order Desk</h1>
+        </div>
+        
+        <div class="top-bar-right">
+          <!-- Company Context Switcher -->
+          <div class="context-switch-container">
+            <span class="switch-label">Select Company:</span>
+            <div class="company-switch-buttons">
+              <button class="switch-btn active" id="btn-comp-as">AquaSphere</button>
+              <button class="switch-btn" id="btn-comp-bi">Badana Ind.</button>
+            </div>
+          </div>
+
+          <!-- User Role Dropdown -->
+          <div class="role-selector-container">
+            <label for="role-dropdown" class="role-label">Logged Role:</label>
+            <select id="role-dropdown" class="form-select">
+              <option value="owner">Owner (Admin)</option>
+              <option value="operator">Operator</option>
+              <option value="accountant">Accountant</option>
+              <option value="pm">Production Manager</option>
+              <option value="mm">Marketing Manager</option>
+            </select>
+          </div>
+
+          <!-- Date Indicator -->
+          <div class="date-badge">
+            <span id="current-date">July 16, 2026</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Owner metrics row (hidden from Admin / PM) -->
+      <section class="owner-metrics-bar" id="owner-metrics-bar">
+        <div class="metric-mini-card">
+          <span class="mini-label">Today's Sales</span>
+          <span class="mini-value text-cyan" id="stat-sales">Rs. 0</span>
+        </div>
+        <div class="metric-mini-card">
+          <span class="mini-label">Cash Collected</span>
+          <span class="mini-value text-success" id="stat-cash">Rs. 0</span>
+        </div>
+        <div class="metric-mini-card">
+          <span class="mini-label">Credit Sales</span>
+          <span class="mini-value text-warning" id="stat-credit">Rs. 0</span>
+        </div>
+        <div class="metric-mini-card">
+          <span class="mini-label">Expenses</span>
+          <span class="mini-value text-danger" id="stat-expenses">Rs. 0</span>
+        </div>
+        <div class="metric-mini-card owner-only">
+          <span class="mini-label">Est. Profit</span>
+          <span class="mini-value text-success" id="stat-profit">Rs. 0</span>
+        </div>
+      </section>
+
+      <!-- Dynamic Tab Views -->
+      <main class="content-panel">
+        
+        <!-- Tab 1: CRM & Order Desk -->
+        <section id="tab-crm" class="tab-panel active">
+          <div class="content-split">
+            <!-- Left: Customer Search & List -->
+            <div class="panel-card scrollable-card">
+              <div class="card-header">
+                <h2>Customer Directory</h2>
+                <button class="btn btn-primary" id="btn-add-customer">+ Add New Customer</button>
+              </div>
+              <div class="search-field">
+                <input type="text" id="crm-search-input" placeholder="Search by Phone Number, Name, or ID...">
+                <span class="search-icon">🔍</span>
+              </div>
+              <div class="customer-list-container" id="crm-customer-list">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Right: Details & Order Form -->
+            <div class="panel-card" id="quick-order-panel">
+              <div class="empty-state-card" id="crm-empty-state">
+                <span class="empty-state-icon">👤</span>
+                <h3>Select a customer from the left directory to log details or place an order</h3>
+              </div>
+
+              <div class="customer-details-view hidden" id="customer-profile-details">
+                <!-- Customer Header -->
+                <div class="customer-profile-header">
+                  <div class="profile-avatar-frame">
+                    <img id="profile-picture" src="https://via.placeholder.com/80/e2e8f0/000000?text=No+Photo" alt="Customer House">
+                  </div>
+                  <div class="profile-details-info">
+                    <h3 id="profile-name">Ali Khan</h3>
+                    <div class="badges-row">
+                      <span class="badge" id="profile-type">Home</span>
+                      <span class="badge badge-warning hidden" id="profile-alert-inactive">⚠️ Inactivity Alert: No orders for 1 week</span>
+                    </div>
+                    <p class="phone-link" id="profile-phone">+923001234567</p>
+                    <p class="address-text" id="profile-address">House 123, Street 5, Islamabad</p>
+                    <a id="profile-maps" href="#" target="_blank" class="maps-btn">📍 Open Google Maps Location</a>
+                  </div>
+                </div>
+
+                <!-- Numerical Cards -->
+                <div class="stats-row">
+                  <div class="stat-card">
+                    <span class="label">Outstanding balance</span>
+                    <span class="value" id="profile-balance">Rs. 0</span>
+                  </div>
+                  <div class="stat-card">
+                    <span class="label">19L Bottles Held</span>
+                    <span class="value" id="profile-bottles-held">0</span>
+                  </div>
+                  <div class="stat-card">
+                    <span class="label">Credit Limit</span>
+                    <span class="value" id="profile-credit-limit">Rs. 5,000</span>
+                  </div>
+                </div>
+
+                <!-- History Indicators -->
+                <div class="historical-row">
+                  <p>Last Delivery Date: <span class="bold" id="profile-last-delivery">Never</span></p>
+                  <p>Average Monthly Orders: <span class="bold" id="profile-avg-orders">0</span></p>
+                </div>
+
+                <!-- Order form -->
+                <div class="order-form-box">
+                  <h3>Log New Order</h3>
+                  
+                  <div class="order-selector-tabs">
+                    <button class="order-tab active" id="order-type-19l-btn">19L Reusable Refill</button>
+                    <button class="order-tab" id="order-type-pet-btn">PET Packed Bottles</button>
+                  </div>
+
+                  <form id="quick-order-form">
+                    <input type="hidden" id="order-customer-id">
+                    <input type="hidden" id="order-type-val" value="19L">
+
+                    <!-- 19L Refills Form -->
+                    <div class="form-grid" id="row-19l-inputs">
+                      <div class="form-item">
+                        <label for="order-qty-19l">Number of 19L Bottles Ordered</label>
+                        <input type="number" id="order-qty-19l" min="1" value="1" class="form-input">
+                      </div>
+                      <div class="form-item">
+                        <label for="order-price-19l">Selling Price per Bottle (Rs.)</label>
+                        <input type="number" id="order-price-19l" min="0" value="250" class="form-input">
+                      </div>
+                    </div>
+
+                    <!-- PET Packs Form -->
+                    <div class="form-grid hidden" id="row-pet-inputs">
+                      <div class="form-item">
+                        <label for="order-qty-05l">0.5L Packs (12 Bottles / Pack)</label>
+                        <input type="number" id="order-qty-05l" min="0" value="0" class="form-input">
+                      </div>
+                      <div class="form-item">
+                        <label for="order-price-05l">Price per 0.5L Pack (Rs.)</label>
+                        <input type="number" id="order-price-05l" min="0" value="500" class="form-input">
+                      </div>
+                      <div class="form-item">
+                        <label for="order-qty-15l">1.5L Packs (6 Bottles / Pack)</label>
+                        <input type="number" id="order-qty-15l" min="0" value="0" class="form-input">
+                      </div>
+                      <div class="form-item">
+                        <label for="order-price-15l">Price per 1.5L Pack (Rs.)</label>
+                        <input type="number" id="order-price-15l" min="0" value="450" class="form-input">
+                      </div>
+                    </div>
+
+                    <div class="form-grid">
+                      <div class="form-item">
+                        <label for="order-expected-date">Expected Delivery Date</label>
+                        <input type="date" id="order-expected-date" required class="form-input">
+                      </div>
+                      <div class="form-item">
+                        <label for="order-charged-amount">Total Charged Amount (Rs.)</label>
+                        <input type="number" id="order-charged-amount" readonly class="form-input disabled-input">
+                      </div>
+                    </div>
+
+                    <div class="form-item">
+                      <label for="order-remarks">Delivery Instructions / Remarks</label>
+                      <input type="text" id="order-remarks" class="form-input" placeholder="e.g. Leave with gatekeeper">
+                    </div>
+
+                    <button type="submit" class="btn btn-cyan btn-full">Submit & Place Order</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 2: Deliveries -->
+        <section id="tab-orders" class="tab-panel">
+          <div class="panel-card">
+            <div class="card-header">
+              <h2>Pending Deliveries Ledger</h2>
+              <input type="text" id="order-list-search" class="form-input small-search" placeholder="Filter by customer name...">
+            </div>
+            <div class="table-frame">
+              <table class="simple-table" id="orders-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Product Type</th>
+                    <th>Details</th>
+                    <th>Target Date</th>
+                    <th>Delivery Status</th>
+                    <th>Payment Status</th>
+                    <th>Outstanding Bal.</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 3: PET Production -->
+        <section id="tab-production" class="tab-panel">
+          <div class="content-split-2">
+            <!-- Left: Materials lists -->
+            <div class="panel-card">
+              <h2>Factory Consumables Inventory</h2>
+              <p class="description-text">Quantities dynamically calculated from ledger history. Warning triggers show on low stock.</p>
+              <div class="materials-grid" id="production-inventory-status">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Right: Production entry form -->
+            <div class="panel-card">
+              <h2>Log Daily PET Production Run</h2>
+              <form id="pet-production-form">
+                <div class="form-item">
+                  <label for="prod-qty-05l">Number of 0.5L PET Packs Produced (12 bottles per pack)</label>
+                  <input type="number" id="prod-qty-05l" min="0" value="0" required class="form-input">
+                  <span class="help-text">Consumes 12x 0.5L bottles, 12x Caps, labels (6.72g), wrap (50g) & water minerals.</span>
+                </div>
+                <div class="form-item">
+                  <label for="prod-qty-15l">Number of 1.5L PET Packs Produced (6 bottles per pack)</label>
+                  <input type="number" id="prod-qty-15l" min="0" value="0" required class="form-input">
+                  <span class="help-text">Consumes 6x 1.5L bottles, 6x Caps, labels (7.86g), wrap (50g) & water minerals.</span>
+                </div>
+
+                <div class="calculation-summary-card">
+                  <h4>Automatic Chemical & Water Calculations</h4>
+                  <p>Total Water Treated: <span class="bold" id="run-water-litres">0</span> Litres</p>
+                  <p>Mineral Sets to Deduct: <span class="bold" id="run-mineral-sets">0.00000</span> Sets</p>
+                  <span class="help-text">Deducted fraction treats exactly 15,140 Litres per Mineral Set.</span>
+                </div>
+
+                <button type="submit" class="btn btn-cyan btn-full">Post Production Entry</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="panel-card mt-20">
+            <h2>Production Runs History</h2>
+            <div class="table-frame">
+              <table class="simple-table" id="production-history-table">
+                <thead>
+                  <tr>
+                    <th>Batch ID</th>
+                    <th>Date</th>
+                    <th>0.5L Packs</th>
+                    <th>1.5L Packs</th>
+                    <th>Minerals Consumed</th>
+                  </tr>
+                </thead>
+                <tbody id="production-history-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 4: Purchases & Vendors -->
+        <section id="tab-purchases" class="tab-panel">
+          <div class="content-split-2">
+            <!-- Left: Vendors Registry -->
+            <div class="panel-card">
+              <div class="card-header">
+                <h2>Vendors Payable registry</h2>
+                <button class="btn btn-sm btn-primary" id="btn-add-vendor">+ New Vendor</button>
+              </div>
+              <div class="table-frame">
+                <table class="simple-table" id="vendors-table">
+                  <thead>
+                    <tr>
+                      <th>Vendor Name</th>
+                      <th>Phone Number</th>
+                      <th>Payable Outstanding</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vendors-table-body">
+                    <!-- Injected dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right: Record purchases -->
+            <div class="panel-card">
+              <h2>Post Inventory Purchase (On Credit)</h2>
+              <form id="purchase-form">
+                <div class="form-item">
+                  <label for="purchase-vendor">Select Vendor</label>
+                  <select id="purchase-vendor" required class="form-select"></select>
+                </div>
+                <div class="form-item">
+                  <label for="purchase-item">Select Raw Material / fleet Asset</label>
+                  <select id="purchase-item" required class="form-select"></select>
+                </div>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="purchase-qty">Quantity</label>
+                    <input type="number" id="purchase-qty" min="0.0001" step="any" required class="form-input">
+                  </div>
+                  <div class="form-item">
+                    <label for="purchase-cost">Unit Cost (Rs.)</label>
+                    <input type="number" id="purchase-cost" min="0" required class="form-input">
+                  </div>
+                </div>
+                <div class="liability-indicator">
+                  Total Payable Amount: <span class="bold" id="purchase-total-label">Rs. 0</span>
+                </div>
+                <button type="submit" class="btn btn-cyan btn-full">Post Purchase Bill</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="panel-card mt-20">
+            <h2>Raw Material Purchases History</h2>
+            <div class="table-frame">
+              <table class="simple-table" id="purchases-table">
+                <thead>
+                  <tr>
+                    <th>Purchase ID</th>
+                    <th>Date</th>
+                    <th>Vendor</th>
+                    <th>Item Description</th>
+                    <th>Quantity</th>
+                    <th>Total Liability</th>
+                  </tr>
+                </thead>
+                <tbody id="purchases-table-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 5: Expenses & Spot Sales -->
+        <section id="tab-expenses" class="tab-panel">
+          <div class="content-split-2">
+            <!-- Left: Expenses form -->
+            <div class="panel-card">
+              <h2>Record Operating Expense</h2>
+              <p class="description-text">Enter fuel, rent, salaries, electricity bills, etc. Note: Accountant must attach receipt photo.</p>
+              <form id="expense-form">
+                <div class="form-item">
+                  <label for="expense-type">Expense Category</label>
+                  <select id="expense-type" required class="form-select">
+                    <option value="fuel">Fuel / Transport Expense</option>
+                    <option value="salaries">Staff Salaries</option>
+                    <option value="electricity">Electricity Bill</option>
+                    <option value="plant_rent">Plant / Office Rent</option>
+                    <option value="vehicle_repair">Vehicle Repairs</option>
+                    <option value="machine_repair">Blowing / Plant Machine Repairs</option>
+                    <option value="misc">Miscellaneous Expenses</option>
+                  </select>
+                </div>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="expense-amount">Amount (Rs.)</label>
+                    <input type="number" id="expense-amount" min="1" required class="form-input">
+                  </div>
+                  <div class="form-item">
+                    <label for="expense-date">Date</label>
+                    <input type="date" id="expense-date" required class="form-input">
+                  </div>
+                </div>
+                <div class="form-item">
+                  <label for="expense-remarks">Details / Description</label>
+                  <input type="text" id="expense-remarks" class="form-input" placeholder="e.g. 50L Diesel for Suzuki pickup">
+                </div>
+                <div class="form-item">
+                  <label for="expense-photo">Upload Receipt Photo (Required for Accountant)</label>
+                  <input type="file" id="expense-photo" class="form-input" accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-danger btn-full">Post Expense Entry</button>
+              </form>
+            </div>
+
+            <!-- Right: Counter / Spot sales -->
+            <div class="panel-card">
+              <h2>Record Counter / Spot Sale</h2>
+              <p class="description-text">Immediate walk-in customers bringing their own bottles.</p>
+              <form id="spot-sale-form">
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="spot-litres">Water Litres Sold</label>
+                    <input type="number" id="spot-litres" min="0" value="0" class="form-input">
+                  </div>
+                  <div class="form-item">
+                    <label for="spot-caps">Caps Issued / Sold</label>
+                    <input type="number" id="spot-caps" min="0" value="0" class="form-input">
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="spot-cash">Cash Collected (Rs.)</label>
+                    <input type="number" id="spot-cash" min="0" value="0" class="form-input">
+                  </div>
+                  <div class="form-item">
+                    <label for="spot-credit">Credit Amount (Rs.)</label>
+                    <input type="number" id="spot-credit" min="0" value="0" class="form-input">
+                  </div>
+                </div>
+                <div class="form-item" id="spot-customer-select-group" style="opacity: 0.5;">
+                  <label for="spot-customer">Customer Profile (Required for Credit sales)</label>
+                  <select id="spot-customer" class="form-select">
+                    <option value="">-- Cash Sale Only --</option>
+                  </select>
+                </div>
+                <div class="form-item">
+                  <label for="spot-remarks">Sale Notes / Remarks</label>
+                  <input type="text" id="spot-remarks" class="form-input" placeholder="e.g. Walk-in refilled 5 drums">
+                </div>
+                <button type="submit" class="btn btn-cyan btn-full">Post Counter Sale</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="panel-card mt-20">
+            <h2>Recent Expenses & Counter Sales Logs</h2>
+            <div class="table-frame">
+              <table class="simple-table" id="expenses-table-log">
+                <thead>
+                  <tr>
+                    <th>Type / Category</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Details / Remarks</th>
+                  </tr>
+                </thead>
+                <tbody id="expenses-table-log-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 6: Daily Closing -->
+        <section id="tab-closing" class="tab-panel">
+          <div class="content-split-2">
+            <!-- Left: close entry -->
+            <div class="panel-card">
+              <h2>Post Daily Closing & Lock Ledger</h2>
+              <p class="description-text">Once submitted, editing daily transactions is locked for that day. (Only Owner can override).</p>
+              
+              <form id="daily-closing-form">
+                <div class="form-item">
+                  <label for="closing-date">Date of Closing</label>
+                  <input type="date" id="closing-date" required class="form-input">
+                </div>
+                
+                <div class="calculation-summary-card">
+                  <h4>Day Closing Summary calculations</h4>
+                  <div id="closing-calculation-summary">
+                    <p>Total Deliveries: <span class="bold" id="close-delivery-count">0</span></p>
+                    <p>Sales Recorded: <span class="bold text-cyan" id="close-sales-value">Rs. 0</span></p>
+                    <p>Cash Collected: <span class="bold text-success" id="close-cash-value">Rs. 0</span></p>
+                    <p>Expenses Logged: <span class="bold text-danger" id="close-expense-value">Rs. 0</span></p>
+                    <p>Calculated Net: <span class="bold text-success" id="close-net-value">Rs. 0</span></p>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-cyan btn-full" id="btn-submit-closing">Submit Closing & Lock Date</button>
+              </form>
+            </div>
+
+            <!-- Right: log list -->
+            <div class="panel-card">
+              <h2>Closed Ledger History</h2>
+              <div class="table-frame">
+                <table class="simple-table" id="closings-history-table">
+                  <thead>
+                    <tr>
+                      <th>Date closed</th>
+                      <th>Deliveries</th>
+                      <th>Sales</th>
+                      <th>Cash Collected</th>
+                      <th>Expenses</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="closings-history-body">
+                    <!-- Injected dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab 7: Blowing machine portal -->
+        <section id="tab-blowing" class="tab-panel">
+          <div class="blowing-main-header">
+            <h2>Blowing Machine Division</h2>
+            <p class="description-text">Produces empty PET bottles from preforms. Purchases, sales, and preform weights are fully segregated.</p>
+          </div>
+
+          <div class="content-split-2">
+            <!-- Left: Blowing stock metrics -->
+            <div class="panel-card">
+              <h3>Blowing Materials & Stock</h3>
+              <div class="blowing-preforms-grid">
+                <div class="preform-card">
+                  <span class="label">Pure Preforms Stock</span>
+                  <span class="value text-cyan" id="blow-stat-pure-preform">0.00 kg</span>
+                </div>
+                <div class="preform-card">
+                  <span class="label">Mix Preforms Stock</span>
+                  <span class="value text-warning" id="blow-stat-mix-preform">0.00 kg</span>
+                </div>
+              </div>
+
+              <h4 class="mt-20">Blown Empty Bottles Stock</h4>
+              <div class="table-frame">
+                <table class="simple-table small-font" id="blow-inventory-table">
+                  <thead>
+                    <tr>
+                      <th>Brand</th>
+                      <th>Bottle Size</th>
+                      <th>Material Grade</th>
+                      <th>Factory Stock (pcs)</th>
+                      <th>Warehouse Stock (pcs)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="blow-inventory-body">
+                    <!-- Injected dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Right: Actions tabbed panel -->
+            <div class="panel-card">
+              <div class="blowing-action-selectors">
+                <button class="blow-act-btn active" id="btn-blow-purchase">Buy Preforms</button>
+                <button class="blow-act-btn" id="btn-blow-production">Blow Bottles</button>
+                <button class="blow-act-btn" id="btn-blow-transfer">Transfer</button>
+                <button class="blow-act-btn" id="btn-blow-sale">Sell Bottles</button>
+              </div>
+
+              <!-- Action form 1: preform buy -->
+              <form id="blow-preform-purchase-form" class="blow-action-form">
+                <h3>Buy Raw Preforms</h3>
+                <div class="form-item">
+                  <label for="blow-buy-type">Preform Grade / Type</label>
+                  <select id="blow-buy-type" class="form-select">
+                    <option value="pure">Pure Preform</option>
+                    <option value="mix">Mix Preform</option>
+                  </select>
+                </div>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="blow-buy-qty">Weight (kg)</label>
+                    <input type="number" id="blow-buy-qty" min="0.1" step="any" required class="form-input">
+                  </div>
+                  <div class="form-item">
+                    <label for="blow-buy-cost">Total Cost (Rs.)</label>
+                    <input type="number" id="blow-buy-cost" min="0" required class="form-input">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-cyan btn-full">Post Purchase</button>
+              </form>
+
+              <!-- Action form 2: blow production -->
+              <form id="blow-production-form" class="blow-action-form hidden">
+                <h3>Run Bottle Blowing Production</h3>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="blow-prod-brand">Brand</label>
+                    <select id="blow-prod-brand" class="form-select">
+                      <option value="AquaSphere">Aqua Sphere</option>
+                      <option value="Deosai">Deosai</option>
+                      <option value="Pivrifine">Pivrifine</option>
+                      <option value="Dasani">Dasani</option>
+                    </select>
+                  </div>
+                  <div class="form-item">
+                    <label for="blow-prod-type">Preform Grade / Type</label>
+                    <select id="blow-prod-type" class="form-select">
+                      <option value="pure">Pure Preform</option>
+                      <option value="mix">Mix Preform</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="blow-prod-size">Bottle SKU Size</label>
+                    <select id="blow-prod-size" class="form-select">
+                      <option value="0.5L">0.5L</option>
+                      <option value="1.5L">1.5L</option>
+                    </select>
+                  </div>
+                  <div class="form-item">
+                    <label for="blow-prod-qty">Number of Bottles Blown (pcs)</label>
+                    <input type="number" id="blow-prod-qty" min="1" required class="form-input">
+                  </div>
+                </div>
+
+                <div class="calculation-summary-card">
+                  <p>Calculated weight to deduct: <span class="bold" id="blow-run-weight">0.00 kg</span></p>
+                  <span class="help-text">Pure preforms: 1.5L = 30g, 0.5L = 15g | Mixed: 1.5L = 27g, 0.5L = 13g</span>
+                </div>
+
+                <button type="submit" class="btn btn-cyan btn-full">Execute Production Run</button>
+              </form>
+
+              <!-- Action form 3: transfer -->
+              <form id="blow-transfer-form" class="blow-action-form hidden">
+                <h3>Transfer Blown Bottles (Blowing Factory → Primary Warehouse)</h3>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="blow-trans-brand">Brand</label>
+                    <select id="blow-trans-brand" class="form-select">
+                      <option value="AquaSphere">Aqua Sphere</option>
+                      <option value="Deosai">Deosai</option>
+                      <option value="Pivrifine">Pivrifine</option>
+                      <option value="Dasani">Dasani</option>
+                    </select>
+                  </div>
+                  <div class="form-item">
+                    <label for="blow-trans-type">Preform Grade</label>
+                    <select id="blow-trans-type" class="form-select">
+                      <option value="pure">Pure Preform</option>
+                      <option value="mix">Mix Preform</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="blow-trans-size">Bottle SKU Size</label>
+                    <select id="blow-trans-size" class="form-select">
+                      <option value="0.5L">0.5L</option>
+                      <option value="1.5L">1.5L</option>
+                    </select>
+                  </div>
+                  <div class="form-item">
+                    <label for="blow-trans-qty">Quantity to Move (pcs)</label>
+                    <input type="number" id="blow-trans-qty" min="1" required class="form-input">
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-cyan btn-full">Commit Inventory Transfer</button>
+              </form>
+
+              <!-- Action form 4: sell blown bottles -->
+              <form id="blow-sale-form" class="blow-action-form hidden">
+                <h3>Log Empty Blown Bottles Sale</h3>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="blow-sale-brand">Brand</label>
+                    <select id="blow-sale-brand" class="form-select">
+                      <option value="AquaSphere">Aqua Sphere</option>
+                      <option value="Deosai">Deosai</option>
+                      <option value="Pivrifine">Pivrifine</option>
+                      <option value="Dasani">Dasani</option>
+                    </select>
+                  </div>
+                  <div class="form-item">
+                    <label for="blow-sale-type">Preform Grade</label>
+                    <select id="blow-sale-type" class="form-select">
+                      <option value="pure">Pure Preform</option>
+                      <option value="mix">Mix Preform</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="blow-sale-size">Bottle SKU Size</label>
+                    <select id="blow-sale-size" class="form-select">
+                      <option value="0.5L">0.5L</option>
+                      <option value="1.5L">1.5L</option>
+                    </select>
+                  </div>
+                  <div class="form-item">
+                    <label for="blow-sale-loc">Deduct From Location</label>
+                    <select id="blow-sale-loc" class="form-select">
+                      <option value="factory">Blowing Factory</option>
+                      <option value="warehouse">Primary Warehouse</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="blow-sale-qty">Quantity Sold (pcs)</label>
+                    <input type="number" id="blow-sale-qty" min="1" required class="form-input">
+                  </div>
+                  <div class="form-item">
+                    <label for="blow-sale-price">Unit Price (Rs.)</label>
+                    <input type="number" id="blow-sale-price" min="0" required class="form-input">
+                  </div>
+                </div>
+                <div class="form-grid">
+                  <div class="form-item">
+                    <label for="blow-sale-cust">Buyer Name</label>
+                    <input type="text" id="blow-sale-cust" class="form-input" placeholder="e.g. Deosai distributor" required>
+                  </div>
+                  <div class="form-item">
+                    <label for="blow-sale-pay">Payment Method</label>
+                    <select id="blow-sale-pay" class="form-select">
+                      <option value="cash">Cash Collection</option>
+                      <option value="bank">Bank Transfer</option>
+                      <option value="credit">On Credit Ledger</option>
+                    </select>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-cyan btn-full">Post Empty Bottles Sale</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- WARNING / SOFT-BLOCK MODAL (HIGH VISIBILITY OVERLAY) -->
+  <div class="modal-backdrop hidden" id="modal-warning">
+    <div class="warning-modal-box">
+      <div class="warning-header">
+        <span class="warning-icon">⚠️</span>
+        <h2>Operating System Alert</h2>
+      </div>
+      <div class="warning-body">
+        <p id="warning-message">Outstanding balance exceeds customer credit limit. Do you want to override?</p>
+      </div>
+      <div class="warning-footer">
+        <button class="btn btn-muted" id="btn-warning-cancel">Cancel Action</button>
+        <button class="btn btn-cyan" id="btn-warning-confirm">Yes, Confirm Override</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD CUSTOMER MODAL -->
+  <div class="modal-backdrop hidden" id="modal-customer">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Register New Customer</h2>
+        <button class="close-modal-btn" id="btn-close-cust-modal">&times;</button>
+      </div>
+      <form id="modal-customer-form">
+        <div class="form-item">
+          <label for="cust-name">Full Name</label>
+          <input type="text" id="cust-name" required class="form-input" placeholder="e.g. Tariq Mehmood">
+        </div>
+        <div class="form-item">
+          <label for="cust-phone">Phone Number (Unique ID)</label>
+          <input type="text" id="cust-phone" required class="form-input" placeholder="e.g. +923007654321">
+        </div>
+        <div class="form-item">
+          <label for="cust-address">Street Address</label>
+          <input type="text" id="cust-address" required class="form-input" placeholder="e.g. Plaza 22, Sector G-11, Islamabad">
+        </div>
+        <div class="form-item">
+          <label for="cust-maps">Google Maps Location Link (Optional)</label>
+          <input type="text" id="cust-maps" class="form-input" placeholder="e.g. https://maps.google.com/?q=...">
+        </div>
+        <div class="form-item">
+          <label for="cust-photo">House Exterior Photo Url (Optional)</label>
+          <input type="text" id="cust-photo" class="form-input" placeholder="e.g. https://images.unsplash.com/...">
+        </div>
+        <div class="form-grid">
+          <div class="form-item">
+            <label for="cust-type">Customer Category</label>
+            <select id="cust-type" class="form-select">
+              <option value="Home">Home Client</option>
+              <option value="Restaurant">Restaurant Account</option>
+              <option value="Shop">Retail Shop</option>
+              <option value="Distributor">Distributor / Wholesale</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label for="cust-price">Default 19L Selling Price (Optional)</label>
+            <input type="number" id="cust-price" value="250" class="form-input">
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="form-item">
+            <label for="cust-credit-limit">Credit Limit (0 = Unlimited)</label>
+            <input type="number" id="cust-credit-limit" value="5000" class="form-input">
+          </div>
+          <div class="form-item">
+            <label for="cust-credit-duration">Credit Duration (Months)</label>
+            <input type="number" id="cust-credit-duration" value="1" class="form-input">
+          </div>
+        </div>
+        <div class="form-item">
+          <label for="cust-remarks">Remarks</label>
+          <input type="text" id="cust-remarks" class="form-input" placeholder="e.g. Delivery on Sundays only">
+        </div>
+        <button type="submit" class="btn btn-cyan btn-full">Save Customer Record</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADD VENDOR MODAL -->
+  <div class="modal-backdrop hidden" id="modal-vendor">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Register New Vendor</h2>
+        <button class="close-modal-btn" id="btn-close-vendor-modal">&times;</button>
+      </div>
+      <form id="modal-vendor-form">
+        <div class="form-item">
+          <label for="vendor-name">Vendor Name</label>
+          <input type="text" id="vendor-name" required class="form-input" placeholder="e.g. Capital Plastics Co.">
+        </div>
+        <div class="form-item">
+          <label for="vendor-phone">Phone Number</label>
+          <input type="text" id="vendor-phone" class="form-input" placeholder="e.g. +923218765432">
+        </div>
+        <div class="form-item">
+          <label for="vendor-remarks">Remarks</label>
+          <input type="text" id="vendor-remarks" class="form-input" placeholder="e.g. Caps supplier">
+        </div>
+        <button type="submit" class="btn btn-cyan btn-full">Register Vendor</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- VENDOR PAYMENT MODAL -->
+  <div class="modal-backdrop hidden" id="modal-vendor-payment">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Log Vendor Payment</h2>
+        <button class="close-modal-btn" id="btn-close-vp-modal">&times;</button>
+      </div>
+      <form id="modal-vendor-payment-form">
+        <input type="hidden" id="pay-vendor-id">
+        <div class="form-item">
+          <label>Paying Vendor: <span class="bold" id="pay-vendor-name">Vendor Name</span></label>
+          <p>Outstanding Liability: <span class="bold text-danger" id="pay-vendor-balance">Rs. 0</span></p>
+        </div>
+        <div class="form-item">
+          <label for="pay-vendor-amount">Payment Amount (Rs.)</label>
+          <input type="number" id="pay-vendor-amount" min="1" required class="form-input">
+        </div>
+        <div class="form-item">
+          <label for="pay-vendor-method">Payment Mode</label>
+          <select id="pay-vendor-method" class="form-select">
+            <option value="cash">Cash Payment</option>
+            <option value="bank">Bank Transfer</option>
+            <option value="mobile_wallet">Mobile Wallet</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="form-item">
+          <label for="pay-vendor-remarks">Remarks / Receipt ID</label>
+          <input type="text" id="pay-vendor-remarks" class="form-input" placeholder="e.g. Bank slip #982">
+        </div>
+        <button type="submit" class="btn btn-cyan btn-full">Post Payment Entry</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- LOG DELIVERY MODAL (FAST RECORD IN-CALL) -->
+  <div class="modal-backdrop hidden" id="modal-delivery">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>Log Delivery & Return Stats</h2>
+        <button class="close-modal-btn" id="btn-close-deliv-modal">&times;</button>
+      </div>
+      <form id="modal-delivery-form">
+        <input type="hidden" id="delivery-order-id">
+        
+        <div class="delivery-details-bar">
+          <p>Customer: <span class="bold" id="deliv-cust-name">Ali Khan</span></p>
+          <p>Bottles currently held: <span class="bold text-cyan" id="deliv-cust-holds">0</span></p>
+          <p>Ordered Products: <span class="bold" id="deliv-order-details">1 Refill</span></p>
+        </div>
+
+        <div class="form-item">
+          <label for="deliv-date">Actual Delivery Date</label>
+          <input type="date" id="deliv-date" required class="form-input">
+        </div>
+
+        <!-- 19L Refill Fields -->
+        <div id="deliv-19l-returns">
+          <div class="form-grid">
+            <div class="form-item">
+              <label for="deliv-qty">Qty Delivered (19L)</label>
+              <input type="number" id="deliv-qty" min="0" required class="form-input">
+            </div>
+            <div class="form-item">
+              <label for="deliv-return-good">Empty Good Returned</label>
+              <input type="number" id="deliv-return-good" min="0" required class="form-input">
+            </div>
+          </div>
+          <div class="form-item">
+            <label for="deliv-return-broken">Empty Broken Returned (Write-off asset)</label>
+            <input type="number" id="deliv-return-broken" min="0" required class="form-input">
+          </div>
+        </div>
+
+        <!-- PET delivery quantities (if it is a PET order, shown/hidden in js) -->
+        <div id="deliv-pet-quantities" class="hidden">
+          <div class="form-grid">
+            <div class="form-item">
+              <label for="deliv-qty-05l">0.5L Packs Delivered</label>
+              <input type="number" id="deliv-qty-05l" min="0" class="form-input">
+            </div>
+            <div class="form-item">
+              <label for="deliv-qty-15l">1.5L Packs Delivered</label>
+              <input type="number" id="deliv-qty-15l" min="0" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Finance details -->
+        <div class="form-grid">
+          <div class="form-item">
+            <label for="deliv-cash">Cash Collected Now (Rs.)</label>
+            <input type="number" id="deliv-cash" min="0" required class="form-input">
+          </div>
+          <div class="form-item">
+            <label for="deliv-pay-method">Payment Mode</label>
+            <select id="deliv-pay-method" class="form-select">
+              <option value="cash">Cash Collection</option>
+              <option value="bank">Bank Transfer</option>
+              <option value="mobile_wallet">Mobile Wallet</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-item">
+          <label for="deliv-remarks">Driver Notes / Remarks</label>
+          <input type="text" id="deliv-remarks" class="form-input" placeholder="e.g. Customer paid full cash">
+        </div>
+
+        <button type="submit" class="btn btn-cyan btn-full">Post Delivery Entry</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

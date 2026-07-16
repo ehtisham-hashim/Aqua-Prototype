@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "customerId": null,
+    "txnType": "purchased_new",
+    "qty": 100,
+    "refDeliveryId": null,
+    "note": "Initial factory bottles",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  }
+]

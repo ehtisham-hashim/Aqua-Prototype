@@ -1,0 +1,41 @@
+[
+  {
+    "id": 1,
+    "phone": "+923001234567",
+    "name": "Ali Khan",
+    "address": "House 123, Street 5, F-10, Islamabad",
+    "mapsLocation": "https://maps.google.com/?q=33.6844,73.0479",
+    "homePictureUrl": "/images/customers/ali_khan.jpg",
+    "customerType": "Home",
+    "creditLimit": 5000,
+    "creditDuration": 30,
+    "defaultPrice": null,
+    "remarks": "Likes quick delivery"
+  },
+  {
+    "id": 2,
+    "phone": "+925111172867",
+    "name": "Savory Foods",
+    "address": "Plot 14, Blue Area, Islamabad",
+    "mapsLocation": "https://maps.google.com/?q=33.7123,73.0567",
+    "homePictureUrl": "/images/customers/savory.jpg",
+    "customerType": "Restaurant",
+    "creditLimit": 15000,
+    "creditDuration": 30,
+    "defaultPrice": null,
+    "remarks": "Deliver in morning only"
+  },
+  {
+    "id": 3,
+    "phone": "+923339876543",
+    "name": "Khyber Store",
+    "address": "Shop 4, G-9 Markaz, Islamabad",
+    "mapsLocation": "https://maps.google.com/?q=33.6901,73.0234",
+    "homePictureUrl": "/images/customers/khyber_store.jpg",
+    "customerType": "Shop",
+    "creditLimit": 0,
+    "creditDuration": 30,
+    "defaultPrice": null,
+    "remarks": "Distributor price option"
+  }
+]
