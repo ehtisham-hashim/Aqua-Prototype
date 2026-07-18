@@ -470,40 +470,93 @@
             <!-- Right: Production entry form -->
             <div class="panel-card">
               <h2>Log Daily PET Production Run</h2>
-              <form id="pet-production-form">
-                <div class="form-item">
-                  <label for="prod-qty-05l">Number of 0.5L PET Packs Produced (12 bottles per pack)</label>
-                  <input type="number" id="prod-qty-05l" min="0" value="0" required class="form-input">
-                  <span class="help-text">Consumes 12x 0.5L bottles, 12x Caps, labels (6.72g), wrap (50g) & water minerals.</span>
-                </div>
-                <div class="form-item">
-                  <label for="prod-qty-15l">Number of 1.5L PET Packs Produced (6 bottles per pack)</label>
-                  <input type="number" id="prod-qty-15l" min="0" value="0" required class="form-input">
-                  <span class="help-text">Consumes 6x 1.5L bottles, 6x Caps, labels (7.86g), wrap (50g) & water minerals.</span>
-                </div>
+              <div id="water-production-container">
+                <form id="pet-production-form">
+                  <div class="form-item">
+                    <label for="prod-qty-05l">Number of 0.5L PET Packs Produced (12 bottles per pack)</label>
+                    <input type="number" id="prod-qty-05l" min="0" value="0" required class="form-input">
+                    <span class="help-text">Consumes 12x 0.5L bottles, 12x Caps, labels (6.72g), wrap (50g) &amp; water minerals.</span>
+                  </div>
+                  <div class="form-item">
+                    <label for="prod-qty-15l">Number of 1.5L PET Packs Produced (6 bottles per pack)</label>
+                    <input type="number" id="prod-qty-15l" min="0" value="0" required class="form-input">
+                    <span class="help-text">Consumes 6x 1.5L bottles, 6x Caps, labels (7.86g), wrap (50g) &amp; water minerals.</span>
+                  </div>
 
-                <div class="form-item">
-                  <label for="prod-broken-05l">Broken 0.5L Empty Bottles During Run</label>
-                  <input type="number" id="prod-broken-05l" min="0" value="0" class="form-input">
-                  <span class="help-text">Deducted from raw 0.5L Empty stock without producing output.</span>
-                </div>
-                <div class="form-item">
-                  <label for="prod-broken-15l">Broken 1.5L Empty Bottles During Run</label>
-                  <input type="number" id="prod-broken-15l" min="0" value="0" class="form-input">
-                  <span class="help-text">Deducted from raw 1.5L Empty stock without producing output.</span>
-                </div>
+                  <div class="form-item">
+                    <label for="prod-broken-05l">Broken 0.5L Empty Bottles During Run</label>
+                    <input type="number" id="prod-broken-05l" min="0" value="0" class="form-input">
+                    <span class="help-text">Deducted from raw 0.5L Empty stock without producing output.</span>
+                  </div>
+                  <div class="form-item">
+                    <label for="prod-broken-15l">Broken 1.5L Empty Bottles During Run</label>
+                    <input type="number" id="prod-broken-15l" min="0" value="0" class="form-input">
+                    <span class="help-text">Deducted from raw 1.5L Empty stock without producing output.</span>
+                  </div>
 
-                <div class="calculation-summary-card">
-                  <h4>Automatic Chemical & Water Calculations</h4>
-                  <p>Total Water Treated: <span class="bold" id="run-water-litres">0</span> Litres</p>
-                  <p>Sodium to Deduct: <span class="bold text-cyan" id="run-sodium-kg">0.00000</span> kg</p>
-                  <p>Calcium to Deduct: <span class="bold text-success" id="run-calcium-kg">0.00000</span> kg</p>
-                  <p>Magnesium to Deduct: <span class="bold text-warning" id="run-magnesium-kg">0.00000</span> kg</p>
-                  <span class="help-text">Per 15,140 L treated: 2 kg Calcium, 0.5 kg Sodium, 1.0 kg Magnesium.</span>
-                </div>
+                  <div class="calculation-summary-card">
+                    <h4>Automatic Chemical &amp; Water Calculations</h4>
+                    <p>Total Water Treated: <span class="bold" id="run-water-litres">0</span> Litres</p>
+                    <p>Sodium to Deduct: <span class="bold text-cyan" id="run-sodium-kg">0.00000</span> kg</p>
+                    <p>Calcium to Deduct: <span class="bold text-success" id="run-calcium-kg">0.00000</span> kg</p>
+                    <p>Magnesium to Deduct: <span class="bold text-warning" id="run-magnesium-kg">0.00000</span> kg</p>
+                    <span class="help-text">Per 15,140 L treated: 2 kg Calcium, 0.5 kg Sodium, 1.0 kg Magnesium.</span>
+                  </div>
 
-                <button type="submit" class="btn btn-cyan btn-full">Post Production Entry</button>
-              </form>
+                  <button type="submit" class="btn btn-cyan btn-full">Post Production Entry</button>
+                </form>
+              </div>
+
+              <!-- Badana Blowing Machine Form -->
+              <div id="badana-production-container" class="hidden">
+                <form id="badana-production-form">
+                  <div class="form-item">
+                    <label for="badana-prod-client">Client Company</label>
+                    <select id="badana-prod-client" class="form-select" required>
+                      <!-- Options populated via JS -->
+                    </select>
+                  </div>
+                  
+                  <div class="form-grid">
+                    <div class="form-item">
+                      <label for="badana-prod-size">Bottle Size</label>
+                      <select id="badana-prod-size" class="form-select" required>
+                        <option value="0.5L">0.5L</option>
+                        <option value="1.5L">1.5L</option>
+                      </select>
+                    </div>
+                    <div class="form-item">
+                      <label for="badana-prod-preform">Preform Type</label>
+                      <select id="badana-prod-preform" class="form-select" required>
+                        <option value="Pure">Pure</option>
+                        <option value="Mix">Mix</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-item">
+                    <label for="badana-prod-qty">Number of Bottles Produced</label>
+                    <input type="number" id="badana-prod-qty" min="1" required class="form-input">
+                  </div>
+
+                  <div class="form-item">
+                    <label for="badana-prod-location">Preform Drawn From</label>
+                    <select id="badana-prod-location" class="form-select" required>
+                      <option value="factory">Factory</option>
+                      <option value="warehouse">Warehouse</option>
+                    </select>
+                  </div>
+
+                  <div class="calculation-summary-card">
+                    <h4>Preform Deduction Calculation</h4>
+                    <p>Raw Preform to Deduct: <span class="bold text-danger" id="run-preform-deduction">0</span> kg</p>
+                    <p>Finished Bottles Added to Warehouse: <span class="bold text-success" id="run-bottle-addition">0</span></p>
+                    <span class="help-text" id="badana-conversion-help">0.5L Mix=27g, 1.5L Mix=15g, 1.5L Pure=13g, 0.5L Pure=15g</span>
+                  </div>
+
+                  <button type="submit" class="btn btn-cyan btn-full">Post Blowing Entry</button>
+                </form>
+              </div>
 
             </div>
           </div>
@@ -553,6 +606,13 @@
                   <label for="purchase-cost">Unit Cost (Rs.)</label>
                   <input type="number" id="purchase-cost" min="0" required class="form-input">
                 </div>
+              </div>
+              <div class="form-item">
+                <label for="purchase-location">Delivered to Location</label>
+                <select id="purchase-location" required class="form-select">
+                  <option value="factory">Factory</option>
+                  <option value="warehouse">Warehouse</option>
+                </select>
               </div>
               <div class="form-item">
                 <label for="purchase-photo">Upload Receipt Photo (Required for Accountant)</label>
@@ -1831,6 +1891,18 @@
                 <label for="std-cust-address">Street Address</label>
                 <input type="text" id="std-cust-address" required class="form-input" placeholder="e.g. Plaza 22, Sector G-11, Islamabad">
               </div>
+              <div class="form-item">
+                <label for="std-cust-maps">Google Maps Location Link (Optional)</label>
+                <input type="text" id="std-cust-maps" class="form-input" placeholder="e.g. https://maps.google.com/?q=...">
+              </div>
+              <div class="form-item">
+                <label for="std-cust-photo">House Exterior Photo Url (Optional)</label>
+                <input type="text" id="std-cust-photo" class="form-input" placeholder="e.g. https://images.unsplash.com/...">
+              </div>
+              <div class="form-item">
+                <label for="std-cust-photo-file">House Exterior Photo (Upload File)</label>
+                <input type="file" id="std-cust-photo-file" class="form-input" accept="image/*">
+              </div>
               <div class="form-grid">
                 <div class="form-item">
                   <label for="std-cust-type">Customer Category</label>
@@ -2100,16 +2172,14 @@
               <div class="form-item">
                 <label for="adj-material">Select Material / SKU</label>
                 <select id="adj-material" required class="form-select">
-                  <option value="bottle_05l">Empty Bottles 0.5L</option>
-                  <option value="bottle_15l">Empty Bottles 1.5L</option>
-                  <option value="bottle_19l">Empty Bottles 19L</option>
-                  <option value="caps_small">Small Caps</option>
-                  <option value="caps_large">Large Caps</option>
-                  <option value="labels">Labels</option>
-                  <option value="wrap">Shrink Wrap</option>
-                  <option value="sodium">Sodium (kg)</option>
-                  <option value="calcium">Calcium (kg)</option>
-                  <option value="magnesium">Magnesium (kg)</option>
+                  <!-- Populated dynamically via JS -->
+                </select>
+              </div>
+              <div class="form-item">
+                <label for="adj-location">Location</label>
+                <select id="adj-location" required class="form-select">
+                  <option value="factory">Factory</option>
+                  <option value="warehouse">Warehouse</option>
                 </select>
               </div>
               <div class="form-grid">

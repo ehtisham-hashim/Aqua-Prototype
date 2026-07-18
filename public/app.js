@@ -21,24 +21,33 @@
     { id: 11, name: "19L Empty Bottles", category: "raw_material", unit: "pcs", reorderLevel: 50 },
     { id: 12, name: "Mineral Sets", category: "raw_material", unit: "set", reorderLevel: 1 },
     { id: 13, name: "1.5L PET finished goods", category: "finished_good", unit: "pcs", reorderLevel: 0 },
-    { id: 14, name: "0.5L PET finished goods", category: "finished_good", unit: "pcs", reorderLevel: 0 }
+    { id: 14, name: "0.5L PET finished goods", category: "finished_good", unit: "pcs", reorderLevel: 0 },
+    { id: 15, name: "Pure Preform", category: "raw_material", unit: "kg", reorderLevel: 100 },
+    { id: 16, name: "Mix Preform", category: "raw_material", unit: "kg", reorderLevel: 100 },
+    { id: 17, name: "0.5L Pure Bottle", category: "finished_good", unit: "pcs", reorderLevel: 0 },
+    { id: 18, name: "1.5L Pure Bottle", category: "finished_good", unit: "pcs", reorderLevel: 0 },
+    { id: 19, name: "0.5L Mix Bottle", category: "finished_good", unit: "pcs", reorderLevel: 0 },
+    { id: 20, name: "1.5L Mix Bottle", category: "finished_good", unit: "pcs", reorderLevel: 0 }
   ];
 
   const DEFAULT_INVENTORY_TXNS = [
-    { id: 1, itemId: 1, direction: "IN", qty: 10, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 2, itemId: 2, direction: "IN", qty: 30, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 3, itemId: 3, direction: "IN", qty: 15, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 4, itemId: 4, direction: "IN", qty: 8000, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 5, itemId: 5, direction: "IN", qty: 9000, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 6, itemId: 6, direction: "IN", qty: 25, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 7, itemId: 7, direction: "IN", qty: 20, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 8, itemId: 8, direction: "IN", qty: 18, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 9, itemId: 9, direction: "IN", qty: 8500, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 10, itemId: 10, direction: "IN", qty: 800, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 11, itemId: 11, direction: "IN", qty: 120, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 12, itemId: 12, direction: "IN", qty: 5, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 13, itemId: 13, direction: "IN", qty: 50, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" },
-    { id: 14, itemId: 14, direction: "IN", qty: 80, refType: "adjustment", refId: "seed", createdAt: "2026-07-16" }
+    { id: 1, itemId: 1, direction: "IN", qty: 10, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 2, itemId: 2, direction: "IN", qty: 30, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 3, itemId: 3, direction: "IN", qty: 15, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 4, itemId: 4, direction: "IN", qty: 8000, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 5, itemId: 5, direction: "IN", qty: 9000, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 6, itemId: 6, direction: "IN", qty: 25, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 7, itemId: 7, direction: "IN", qty: 20, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 8, itemId: 8, direction: "IN", qty: 18, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 9, itemId: 9, direction: "IN", qty: 8500, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 10, itemId: 10, direction: "IN", qty: 800, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 11, itemId: 11, direction: "IN", qty: 120, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 12, itemId: 12, direction: "IN", qty: 5, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 13, itemId: 13, direction: "IN", qty: 50, refType: "adjustment", refId: "seed", location: "warehouse", createdAt: "2026-07-16" },
+    { id: 14, itemId: 14, direction: "IN", qty: 80, refType: "adjustment", refId: "seed", location: "warehouse", createdAt: "2026-07-16" },
+    { id: 15, itemId: 15, direction: "IN", qty: 500, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 16, itemId: 16, direction: "IN", qty: 500, refType: "adjustment", refId: "seed", location: "factory", createdAt: "2026-07-16" },
+    { id: 17, itemId: 17, direction: "IN", qty: 1000, refType: "adjustment", refId: "seed", location: "warehouse", createdAt: "2026-07-16" }
   ];
 
   const DEFAULT_BOTTLE_TXNS = [
@@ -166,7 +175,16 @@
     companies.forEach(comp => {
       const checkKey = `${comp}_customers`;
       if (!localStorage.getItem(checkKey)) {
-        localStorage.setItem(`${comp}_customers`, JSON.stringify(DEFAULT_CUSTOMERS));
+        if (comp === 'badana') {
+          const DEFAULT_BADANA_CUSTOMERS = [
+            { id: 1, name: "Aqua Sphere", phone: "+923000000001", customerType: "Client", creditLimit: 50000 },
+            { id: 2, name: "Deosani", phone: "+923000000002", customerType: "Client", creditLimit: 50000 },
+            { id: 3, name: "Pivrifine", phone: "+923000000003", customerType: "Client", creditLimit: 50000 }
+          ];
+          localStorage.setItem(`${comp}_customers`, JSON.stringify(DEFAULT_BADANA_CUSTOMERS));
+        } else {
+          localStorage.setItem(`${comp}_customers`, JSON.stringify(DEFAULT_CUSTOMERS));
+        }
         localStorage.setItem(`${comp}_items`, JSON.stringify(DEFAULT_ITEMS));
         localStorage.setItem(`${comp}_inventory_transactions`, JSON.stringify(DEFAULT_INVENTORY_TXNS));
         localStorage.setItem(`${comp}_bottle_transactions`, JSON.stringify(DEFAULT_BOTTLE_TXNS));
@@ -188,11 +206,11 @@
   // --- CORE DERIVED CALCULATIONS ---
 
   // 1. Get stock level for item
-  function getItemStock(itemId) {
+  function getItemStock(itemId, location = null) {
     const txns = getTable('inventory_transactions');
     let stock = 0;
     txns.forEach(t => {
-      if (t.itemId === itemId) {
+      if (t.itemId === itemId && (!location || t.location === location)) {
         if (t.direction === 'IN') stock += parseFloat(t.qty);
         else if (t.direction === 'OUT') stock -= parseFloat(t.qty);
       }
@@ -1170,11 +1188,32 @@
 
   // 4. Render PET Production
   function renderProduction() {
-    const items = getTable('items');
+    const isBadana = state.company === 'badana';
+    
+    // Toggle containers
+    document.getElementById('water-production-container').classList.toggle('hidden', isBadana);
+    document.getElementById('badana-production-container').classList.toggle('hidden', !isBadana);
+
+    // Populate clients if Badana
+    if (isBadana) {
+      const clientsSelect = document.getElementById('badana-prod-client');
+      if (clientsSelect.options.length === 0) {
+        const customers = getTable('customers').filter(c => c.customerType === 'Client');
+        clientsSelect.innerHTML = customers.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      }
+    }
+
+    // Filter items based on company
+    const allItems = getTable('items');
+    const items = isBadana 
+      ? allItems.filter(i => [15,16,17,18,19,20].includes(i.id))
+      : allItems.filter(i => ![15,16,17,18,19,20].includes(i.id));
+
     const grid = document.getElementById('production-inventory-status');
     grid.innerHTML = '';
 
     items.forEach(item => {
+      // For Badana raw preform, sum across locations or show combined. We'll show combined for simplicity here.
       const stock = getItemStock(item.id);
       const isLow = stock <= item.reorderLevel;
 
@@ -1235,6 +1274,24 @@
     document.getElementById('run-magnesium-kg').innerText = magnesiumKg.toFixed(5);
   }
 
+  function updateBadanaProductionLive() {
+    const size = document.getElementById('badana-prod-size').value;
+    const type = document.getElementById('badana-prod-preform').value;
+    const qty = parseInt(document.getElementById('badana-prod-qty').value) || 0;
+
+    // 0.5L Mix=27g, 1.5L Mix=15g, 1.5L Pure=13g, 0.5L Pure=15g
+    let preformGrams = 0;
+    if (size === '0.5L' && type === 'Mix') preformGrams = 27;
+    else if (size === '1.5L' && type === 'Mix') preformGrams = 15;
+    else if (size === '1.5L' && type === 'Pure') preformGrams = 13;
+    else if (size === '0.5L' && type === 'Pure') preformGrams = 15;
+
+    const totalKg = (preformGrams * qty) / 1000;
+
+    document.getElementById('run-preform-deduction').innerText = totalKg.toFixed(3);
+    document.getElementById('run-bottle-addition').innerText = qty.toString();
+  }
+
   // 5. Render Purchases & Vendors
   function renderPurchases() {
     const vendors = getTable('vendors');
@@ -1266,7 +1323,13 @@
     const vSelect = document.getElementById('purchase-vendor');
     vSelect.innerHTML = vendors.map(v => `<option value="${v.id}">${v.name}</option>`).join('');
 
-    const rawItems = getTable('items').filter(i => i.category === 'raw_material');
+    const isBadana = state.company === 'badana';
+    const allItems = getTable('items');
+    const companyItems = isBadana 
+      ? allItems.filter(i => [15,16,17,18,19,20].includes(i.id))
+      : allItems.filter(i => ![15,16,17,18,19,20].includes(i.id));
+
+    const rawItems = companyItems.filter(i => i.category === 'raw_material');
     const iSelect = document.getElementById('purchase-item');
     iSelect.innerHTML = rawItems.map(i => `<option value="${i.id}">${i.name} (${i.unit})</option>`).join('');
 
@@ -2691,6 +2754,66 @@
     renderDashboard();
   });
 
+  document.getElementById('badana-production-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const date = document.getElementById('closing-date').value || new Date().toISOString().split('T')[0];
+    if (isDateClosed(date)) {
+      alert("ERROR: This date is CLOSED and locked. Cannot submit production.");
+      return;
+    }
+
+    const clientId = document.getElementById('badana-prod-client').value;
+    const size = document.getElementById('badana-prod-size').value;
+    const type = document.getElementById('badana-prod-preform').value;
+    const qty = parseInt(document.getElementById('badana-prod-qty').value, 10) || 0;
+    const location = document.getElementById('badana-prod-location').value;
+
+    let preformGrams = 0;
+    if (size === '0.5L' && type === 'Mix') preformGrams = 27;
+    else if (size === '1.5L' && type === 'Mix') preformGrams = 15;
+    else if (size === '1.5L' && type === 'Pure') preformGrams = 13;
+    else if (size === '0.5L' && type === 'Pure') preformGrams = 15;
+
+    const totalKg = (preformGrams * qty) / 1000;
+
+    let preformItemId = type === 'Pure' ? 15 : 16;
+    let bottleItemId = 0;
+    if (size === '0.5L' && type === 'Pure') bottleItemId = 17;
+    else if (size === '1.5L' && type === 'Pure') bottleItemId = 18;
+    else if (size === '0.5L' && type === 'Mix') bottleItemId = 19;
+    else if (size === '1.5L' && type === 'Mix') bottleItemId = 20;
+
+    const batches = getTable('production_batches');
+    const bId = batches.length > 0 ? Math.max(...batches.map(b => b.id)) + 1 : 1;
+    batches.push({
+      id: bId,
+      productionDate: date,
+      clientCompanyId: clientId,
+      size,
+      preformType: type,
+      qtyProduced: qty,
+      preformLocation: location,
+      preformConsumed: totalKg
+    });
+    saveTable('production_batches', batches);
+
+    const invTxns = getTable('inventory_transactions');
+    const nextId = () => invTxns.length > 0 ? Math.max(...invTxns.map(t => t.id)) + 1 : 1;
+
+    // Deduct raw preform from specified location
+    invTxns.push({ id: nextId(), itemId: preformItemId, direction: 'OUT', qty: totalKg, refType: 'blowing_consume', refId: String(bId), location: location, createdAt: date });
+    // Add finished bottles to warehouse
+    invTxns.push({ id: nextId(), itemId: bottleItemId, direction: 'IN', qty: qty, refType: 'blowing_output', refId: String(bId), location: 'warehouse', createdAt: date });
+    
+    saveTable('inventory_transactions', invTxns);
+    logActivity(`Posted Badana Batch #${bId}: ${qty}x ${size} ${type} bottles`);
+    alert("SUCCESS: Blowing run posted.");
+    document.getElementById('badana-production-form').reset();
+    updateBadanaProductionLive();
+    renderProduction();
+    renderDashboard();
+  });
+
   // 4. Post vendor purchase bill
   document.getElementById('purchase-form').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -2699,6 +2822,8 @@
     const qty = parseFloat(document.getElementById('purchase-qty').value);
     const cost = parseFloat(document.getElementById('purchase-cost').value);
     const date = document.getElementById('expense-date').value || new Date().toISOString().split('T')[0];
+
+    const location = document.getElementById('purchase-location').value;
 
     if (isDateClosed(date)) {
       alert("ERROR: This date is CLOSED and locked. Cannot post purchase.");
@@ -2742,6 +2867,7 @@
         itemId,
         direction: 'IN',
         qty,
+        location: location,
         refType: 'purchase',
         refId: String(pId),
         createdAt: date
@@ -3148,18 +3274,23 @@
   // --- MODAL DIALOGS SUBMITS (CRUD) ---
 
   // 1. Add Customer Profile
-  document.getElementById('modal-customer-form').addEventListener('submit', function (e) {
+  document.getElementById('modal-customer-form').addEventListener('submit', async function (e) {
     e.preventDefault();
     const name = document.getElementById('cust-name').value;
     const phone = document.getElementById('cust-phone').value;
     const address = document.getElementById('cust-address').value;
     const maps = document.getElementById('cust-maps').value;
-    const photo = document.getElementById('cust-photo').value;
+    let photo = document.getElementById('cust-photo').value;
     const type = document.getElementById('cust-type').value;
     const price = parseFloat(document.getElementById('cust-price').value) || 250;
     const limit = parseFloat(document.getElementById('cust-credit-limit').value) || 0;
     const duration = parseInt(document.getElementById('cust-credit-duration').value, 10) || 1;
     const remarks = document.getElementById('cust-remarks').value;
+
+    const fileInput = document.getElementById('cust-photo-file');
+    if (fileInput && fileInput.files.length > 0) {
+      photo = await getBase64(fileInput);
+    }
 
     const customers = getTable('customers');
     const exists = customers.some(c => c.phone === phone);
@@ -3383,7 +3514,7 @@
   function renderCustomerAddTab() {
     const form = document.getElementById('standalone-customer-add-form');
     if (!form) return;
-    form.onsubmit = function(e) {
+    form.onsubmit = async function(e) {
       e.preventDefault();
       const name = document.getElementById('std-cust-name').value;
       const phone = document.getElementById('std-cust-phone').value;
@@ -3392,6 +3523,14 @@
       const price = parseFloat(document.getElementById('std-cust-price').value) || 250;
       const limit = parseFloat(document.getElementById('std-cust-credit-limit').value) || 5000;
       const duration = parseFloat(document.getElementById('std-cust-credit-duration').value) || 1;
+      
+      const maps = document.getElementById('std-cust-maps')?.value || null;
+      let photoUrl = document.getElementById('std-cust-photo')?.value || null;
+
+      const fileInput = document.getElementById('std-cust-photo-file');
+      if (fileInput && fileInput.files.length > 0) {
+        photoUrl = await getBase64(fileInput);
+      }
       
       const customers = getTable('customers');
       if (customers.some(c => c.phone === phone)) {
@@ -3402,6 +3541,7 @@
       customers.push({
         id: nextId(customers),
         name, phone, address, type, price, creditLimit: limit, creditDuration: duration,
+        mapsLocation: maps, homePictureUrl: photoUrl,
         balance: 0, bottlesHeld: 0
       });
       saveTable('customers', customers);
@@ -3816,15 +3956,52 @@
   function renderInventoryAdjust() {
     const form = document.getElementById('inventory-adjustment-form');
     if (!form) return;
+
+    const select = document.getElementById('adj-material');
+    if (select) {
+      const isBadana = state.company === 'badana';
+      const allItems = getTable('items');
+      const items = isBadana 
+        ? allItems.filter(i => [15,16,17,18,19,20].includes(i.id))
+        : allItems.filter(i => ![15,16,17,18,19,20].includes(i.id));
+      
+      select.innerHTML = items.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+    }
+
     form.onsubmit = function(e) {
       e.preventDefault();
-      const material = document.getElementById('adj-material').value;
+      const itemId = parseInt(document.getElementById('adj-material').value, 10);
       const type = document.getElementById('adj-type').value;
       const qty = parseFloat(document.getElementById('adj-qty').value);
+      const location = document.getElementById('adj-location').value;
       const remarks = document.getElementById('adj-remarks').value;
+      const date = document.getElementById('closing-date')?.value || new Date().toISOString().split('T')[0];
+
+      if (isDateClosed(date)) {
+        alert("ERROR: This date is CLOSED and locked.");
+        return;
+      }
+
+      const txns = getTable('inventory_transactions');
+      const nextId = txns.length > 0 ? Math.max(...txns.map(t => t.id)) + 1 : 1;
       
-      alert(`SUCCESS: Manual stock adjustment of ${qty} units posted for ${material}.`);
+      txns.push({
+        id: nextId,
+        itemId: itemId,
+        direction: type === 'add' ? 'IN' : 'OUT',
+        qty: qty,
+        location: location,
+        refType: 'adjustment',
+        refId: remarks,
+        createdAt: date
+      });
+
+      saveTable('inventory_transactions', txns);
+      logActivity(`Manual stock adjustment: ${type === 'add' ? '+' : '-'}${qty} for Item ID ${itemId} at ${location}`);
+      
+      alert(`SUCCESS: Manual stock adjustment of ${qty} units posted.`);
       form.reset();
+      triggerTabRender('tab-inventory-adjust');
     }
   }
 
@@ -4380,6 +4557,11 @@
   // Production and daily closing live summaries recalculate trigger
   document.getElementById('prod-qty-05l').addEventListener('input', updateProductionRunLive);
   document.getElementById('prod-qty-15l').addEventListener('input', updateProductionRunLive);
+  
+  document.getElementById('badana-prod-size').addEventListener('change', updateBadanaProductionLive);
+  document.getElementById('badana-prod-preform').addEventListener('change', updateBadanaProductionLive);
+  document.getElementById('badana-prod-qty').addEventListener('input', updateBadanaProductionLive);
+
   document.getElementById('closing-date').addEventListener('change', updateDailyClosingCalculations);
   const closingDateAdmin = document.getElementById('closing-date-admin');
   if (closingDateAdmin) {
