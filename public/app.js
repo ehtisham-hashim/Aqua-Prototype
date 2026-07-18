@@ -1095,10 +1095,26 @@
       }
     }
     const searchVal = document.getElementById('order-list-search').value.toLowerCase().trim();
+    const clientFilterEl = document.getElementById('order-client-filter');
+    const clientFilterVal = clientFilterEl ? clientFilterEl.value : '';
+
+    // Populate client filter if empty
+    if (clientFilterEl && clientFilterEl.options.length <= 1) {
+      const isBadana = state.company === 'badana';
+      const companyClients = isBadana 
+        ? customers.filter(c => ['Aqua Sphere', 'Deosani', 'Pivrifine'].includes(c.name))
+        : customers.filter(c => !['Aqua Sphere', 'Deosani', 'Pivrifine'].includes(c.name));
+        
+      clientFilterEl.innerHTML = '<option value="">All Clients</option>' + 
+        companyClients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
 
     const filtered = list.filter(o => {
       const cust = customers.find(c => c.id === o.customerId);
-      return cust ? cust.name.toLowerCase().includes(searchVal) : false;
+      if (!cust) return false;
+      const matchesSearch = cust.name.toLowerCase().includes(searchVal);
+      const matchesClient = clientFilterVal === '' || o.customerId === parseInt(clientFilterVal, 10);
+      return matchesSearch && matchesClient;
     });
 
     if (filtered.length === 0) {
@@ -4485,6 +4501,7 @@
   });
 
   document.getElementById('order-list-search').addEventListener('input', renderPendingOrders);
+  document.getElementById('order-client-filter').addEventListener('change', () => renderPendingOrders());
 
   // Tab switching inside Order desk (19L vs PET)
   document.getElementById('order-type-19l-btn').addEventListener('click', (e) => {

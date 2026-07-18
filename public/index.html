@@ -426,7 +426,13 @@
           <div class="panel-card">
             <div class="card-header">
               <h2>Pending Deliveries Ledger</h2>
-              <input type="text" id="order-list-search" class="form-input small-search" placeholder="Filter by customer name...">
+              <div style="display: flex; gap: 10px;">
+                <select id="order-client-filter" class="form-select" style="min-width: 150px;">
+                  <option value="">All Clients</option>
+                  <!-- Populated dynamically based on division -->
+                </select>
+                <input type="text" id="order-list-search" class="form-input small-search" placeholder="Filter by customer name...">
+              </div>
             </div>
             <div class="table-frame">
               <table class="simple-table" id="orders-table">
