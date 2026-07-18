@@ -424,14 +424,14 @@
   const SUB_TABS_CONFIG = {
     'tab-dashboard': [
       { label: 'Overview', tab: 'tab-dashboard' },
-      { label: 'Sales Analytics', tab: 'tab-dashboard-sales' },
-      { label: 'Financial Overview', tab: 'tab-dashboard-financial' },
+      { label: 'Sales Analytics', tab: 'tab-dashboard-sales', excludeRoles: ['admin'] },
+      { label: 'Financial Overview', tab: 'tab-dashboard-financial', excludeRoles: ['admin'] },
       { label: 'Inventory Summary', tab: 'tab-inventory' },
       { label: 'Production Summary', tab: 'tab-production-history' },
       { label: 'Low Stock Alerts', tab: 'tab-dashboard-low-stock' }
     ],
     'tab-orders': [
-      { label: 'New Order', tab: 'tab-new-order' },
+      { label: 'New Order', tab: 'tab-new-order', excludeRoles: ['admin'] },
       { label: 'Pending Orders', tab: 'tab-orders', filter: 'pending' },
       { label: 'In Progress', tab: 'tab-orders-inprogress' },
       { label: 'Completed Orders', tab: 'tab-orders-completed' },
@@ -448,7 +448,7 @@
       { label: 'Customer Reminders', tab: 'tab-customer-reminders' }
     ],
     'tab-production': [
-      { label: 'New Production', tab: 'tab-production' },
+      { label: 'New Production', tab: 'tab-production', excludeRoles: ['admin'] },
       { label: 'Production History', tab: 'tab-production-history' },
       { label: 'Production Reports', tab: 'tab-production-reports' },
       { label: 'Broken Bottles', tab: 'tab-broken-bottles' },
@@ -523,6 +523,19 @@
     ]
   };
 
+  function updateSubtabsVisibility() {
+    document.querySelectorAll('.subtab-btn').forEach(btn => {
+      if (btn.dataset.excludeRoles) {
+        const excluded = btn.dataset.excludeRoles.split(',');
+        if (excluded.includes(state.role)) {
+          btn.style.display = 'none';
+        } else {
+          btn.style.display = 'inline-block';
+        }
+      }
+    });
+  }
+
   function applyRoleSecurity() {
     const role = state.role;
     const items = PORTAL_SIDEBAR_CONFIG[role] || PORTAL_SIDEBAR_CONFIG['owner'];
@@ -591,6 +604,13 @@
       document.querySelectorAll('.owner-only').forEach(el => el.classList.add('hidden'));
     }
 
+    // Admin-hidden fields
+    if (role === 'admin') {
+      document.querySelectorAll('.admin-hidden').forEach(el => el.classList.add('hidden'));
+    } else {
+      document.querySelectorAll('.admin-hidden').forEach(el => el.classList.remove('hidden'));
+    }
+
     // Daily closing forms visibility
     const ownerClosingForm = document.getElementById('daily-closing-form');
     const adminClosingForm = document.getElementById('admin-closing-checklist-form');
@@ -601,6 +621,8 @@
       if (ownerClosingForm) ownerClosingForm.classList.remove('hidden');
       if (adminClosingForm) adminClosingForm.classList.add('hidden');
     }
+
+    updateSubtabsVisibility();
 
     // Trigger loading first tab
     const firstItem = navContainer.querySelector('.nav-item');
@@ -4999,6 +5021,9 @@
           btn.dataset.tab = sub.tab;
           btn.dataset.filter = sub.filter || '';
           btn.innerText = sub.label;
+          if (sub.excludeRoles) {
+            btn.dataset.excludeRoles = sub.excludeRoles.join(',');
+          }
           if (sub.tab === targetTabId && (sub.filter || '') === '') {
             btn.classList.add('active');
           }
