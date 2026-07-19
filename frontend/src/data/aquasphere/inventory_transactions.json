@@ -1,0 +1,128 @@
+[
+  {
+    "id": 1,
+    "itemId": 1,
+    "direction": "IN",
+    "qty": 10,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 2,
+    "itemId": 2,
+    "direction": "IN",
+    "qty": 30,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 3,
+    "itemId": 3,
+    "direction": "IN",
+    "qty": 15,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 4,
+    "itemId": 4,
+    "direction": "IN",
+    "qty": 6000,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 5,
+    "itemId": 5,
+    "direction": "IN",
+    "qty": 6000,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 6,
+    "itemId": 6,
+    "direction": "IN",
+    "qty": 20,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 7,
+    "itemId": 7,
+    "direction": "IN",
+    "qty": 15,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 8,
+    "itemId": 8,
+    "direction": "IN",
+    "qty": 20,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 9,
+    "itemId": 9,
+    "direction": "IN",
+    "qty": 6000,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 10,
+    "itemId": 10,
+    "direction": "IN",
+    "qty": 500,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 11,
+    "itemId": 11,
+    "direction": "IN",
+    "qty": 100,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 12,
+    "itemId": 12,
+    "direction": "IN",
+    "qty": 10,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 13,
+    "itemId": 13,
+    "direction": "IN",
+    "qty": 100,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  },
+  {
+    "id": 14,
+    "itemId": 14,
+    "direction": "IN",
+    "qty": 100,
+    "refType": "adjustment",
+    "refId": "seed_initial",
+    "createdAt": "2026-07-16T15:21:46+05:00"
+  }
+]

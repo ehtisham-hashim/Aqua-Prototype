@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "productionDate": "2026-07-15",
+    "qty05LProduced": 50,
+    "qty15LProduced": 100,
+    "sodiumConsumed": 0.5,
+    "calciumConsumed": 2.0,
+    "magnesiumConsumed": 1.0,
+    "broken05L": 2,
+    "broken15L": 1
+  }
+]

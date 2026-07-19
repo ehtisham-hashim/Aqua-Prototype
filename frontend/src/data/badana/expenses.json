@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "type": "expense",
+    "expenseType": "fuel",
+    "amount": 2000,
+    "date": "2026-07-15",
+    "remarks": "Diesel for delivery van",
+    "receiptAttached": false
+  },
+  {
+    "id": 2,
+    "type": "spot_sale",
+    "litresSold": 19,
+    "capsSold": 1,
+    "cashReceived": 250,
+    "creditAmount": 0,
+    "customerId": null,
+    "remarks": "Walk-in customer",
+    "date": "2026-07-16"
+  }
+]

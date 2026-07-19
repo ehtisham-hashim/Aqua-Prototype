@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "customerId": 1,
+    "orderType": "19L",
+    "deliveryStatus": "pending",
+    "paymentStatus": "unpaid",
+    "expectedDelivery": "2026-07-16",
+    "remarks": "Please deliver in the morning.",
+    "totalCharged": 250,
+    "qtyOrdered": 1,
+    "unitPrice": 250
+  },
+  {
+    "id": 2,
+    "customerId": 2,
+    "orderType": "PET",
+    "deliveryStatus": "delivered",
+    "paymentStatus": "paid",
+    "expectedDelivery": "2026-07-15",
+    "remarks": "Leave with gatekeeper",
+    "totalCharged": 950,
+    "qty05LOrdered": 1,
+    "unitPrice05L": 500,
+    "qty15LOrdered": 1,
+    "unitPrice15L": 450
+  }
+]

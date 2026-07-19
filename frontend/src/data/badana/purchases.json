@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1,
+    "vendorId": 1,
+    "itemId": 9,
+    "qty": 5000,
+    "unitCost": 0.5,
+    "totalCost": 2500,
+    "purchasedAt": "2026-07-10"
+  }
+]

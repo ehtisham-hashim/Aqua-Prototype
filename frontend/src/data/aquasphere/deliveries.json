@@ -1,0 +1,13 @@
+[
+  {
+    "id": 1,
+    "orderId": 2,
+    "deliveredAt": "2026-07-15",
+    "qtyDelivered": 0,
+    "qty05LDelivered": 1,
+    "qty15LDelivered": 1,
+    "bottlesReturnedGood": 0,
+    "bottlesReturnedBroken": 0,
+    "remarks": "Delivered successfully"
+  }
+]
